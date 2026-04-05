@@ -12,7 +12,7 @@ window.HH_CONFIG = {
   SUPABASE_ANON_KEY: "sb_publishable_CWVHYWFXNwRQWnIfSgCBNg_0xDfHNbd",
 
   // Public profile URL (voor de "Open Instapaper" knop + scraper)
-  INSTAPAPER_URL: "https://www.instapaper.com/p/rutgerbregman",
+  INSTAPAPER_URL: "https://www.instapaper.com/p/brrrtttssss",
 
   // Persoonlijke RSS feed URL voor auto-sync.
   // Hoe te vinden: log in op instapaper.com op desktop → kies folder (Liked /
