@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Hammerhead HQ" />
+  <meta name="theme-color" content="#0a0a0f" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>Hammerhead HQ — voor Jurriën</title>
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">🦈</span>
+        <div>
+          <div class="brand-title">Hammerhead HQ</div>
+          <div class="brand-sub" id="brand-sub">De officiële Jurriën Hamer companion app</div>
+        </div>
+      </div>
+    </header>
+
+    <main id="views">
+      <!-- VIEW 1: MIGRAINE -->
+      <section class="view active" id="view-migraine">
+        <div class="hero">
+          <h1>Hoofd. Pijn. Protocol.</h1>
+          <p class="subtitle">Druk de knop zodra de kwelling begint. We loggen het, de grafiek snikt mee.</p>
+        </div>
+
+        <div class="panic-wrap">
+          <button id="panicBtn" class="panic" aria-label="Migraine aanval loggen">
+            <span class="panic-ring"></span>
+            <span class="panic-ring delay"></span>
+            <span class="panic-label">
+              <span class="panic-title">AANVAL</span>
+              <span class="panic-sub">tik om te loggen</span>
+            </span>
+          </button>
+        </div>
+
+        <div id="lastLog" class="last-log"></div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-num" id="statMonth">0</div>
+            <div class="stat-label">deze maand</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="statYear">0</div>
+            <div class="stat-label">dit jaar</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="statTotal">0</div>
+            <div class="stat-label">totaal</div>
+          </div>
+        </div>
+
+        <div class="card chart-card">
+          <div class="card-head">
+            <h3>Aanvallen per maand</h3>
+            <div class="seg">
+              <button class="seg-btn active" data-range="year">Jaar</button>
+              <button class="seg-btn" data-range="all">Alles</button>
+            </div>
+          </div>
+          <canvas id="chart" height="180"></canvas>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h3>Recente aanvallen</h3>
+            <button id="clearLogs" class="link-btn">wissen</button>
+          </div>
+          <ul id="logList" class="log-list"></ul>
+        </div>
+      </section>
+
+      <!-- VIEW 2: FUNK -->
+      <section class="view" id="view-funk">
+        <div class="hero">
+          <h1>Funk Emergency Button</h1>
+          <p class="subtitle">Eén tik. Eén willekeurig groovy nummer. Geen excuses.</p>
+        </div>
+
+        <div class="funk-stage">
+          <div class="vinyl" id="vinyl">
+            <div class="vinyl-label">♪</div>
+          </div>
+          <div class="track-info">
+            <div class="track-title" id="trackTitle">Nog niks gedraaid</div>
+            <div class="track-artist" id="trackArtist">Druk op de knop en laat de heupen los</div>
+          </div>
+          <div class="funk-actions">
+            <button id="funkBtn" class="btn-primary">🎲 Verras mij</button>
+            <a id="spotifyBtn" class="btn-ghost" href="#" target="_blank" rel="noopener" aria-disabled="true">Open in Spotify</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 3: ARTIKELEN -->
+      <section class="view" id="view-articles">
+        <div class="hero">
+          <h1>Leesvoer van de Webmaster</h1>
+          <p class="subtitle">Zorgvuldig gecureerde hersenkronkels, speciaal voor Hammerhead.</p>
+        </div>
+
+        <div class="notif-card" id="notifCard">
+          <div>
+            <strong>Pushmeldingen</strong>
+            <div class="muted">Wees de eerste die weet dat de webmaster iets briljants vond.</div>
+          </div>
+          <button id="enableNotif" class="btn-primary small">Aanzetten</button>
+        </div>
+
+        <ul id="articleList" class="article-list"></ul>
+
+        <div class="admin-panel" id="adminPanel" hidden>
+          <h3>Webmaster modus 🛠️</h3>
+          <input id="artTitle" placeholder="Titel" />
+          <input id="artUrl" placeholder="https://..." />
+          <textarea id="artDesc" placeholder="Korte intro voor Jurriën"></textarea>
+          <div class="row">
+            <button id="addArticle" class="btn-primary">Publiceren</button>
+            <button id="exitAdmin" class="btn-ghost">Sluiten</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 4: ZELFVERTROUWEN -->
+      <section class="view" id="view-ego">
+        <div class="hero">
+          <h1>Ego Oplader ⚡</h1>
+          <p class="subtitle">Voor als de twijfel toeslaat. Spoiler: jij bent briljant.</p>
+        </div>
+
+        <div class="blurb-card" id="blurbCard">
+          <div class="quote-mark">"</div>
+          <blockquote id="blurbText">...</blockquote>
+          <div class="blurb-source" id="blurbSource">—</div>
+        </div>
+
+        <button id="nextBlurb" class="btn-primary wide">Nog een dosis 💊</button>
+
+        <div class="trophy">
+          <div class="trophy-icon">🏆</div>
+          <div>
+            <div class="trophy-title">Socrates Wisselbeker winnaar</div>
+            <div class="muted">Officieel toegestaan om jezelf een intellectueel te noemen.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="tabbar">
+      <button class="tab active" data-view="view-migraine">
+        <span class="tab-icon">🧠</span>
+        <span class="tab-label">Migraine</span>
+      </button>
+      <button class="tab" data-view="view-funk">
+        <span class="tab-icon">🕺</span>
+        <span class="tab-label">Funk</span>
+      </button>
+      <button class="tab" data-view="view-articles">
+        <span class="tab-icon">📰</span>
+        <span class="tab-label">Artikelen</span>
+      </button>
+      <button class="tab" data-view="view-ego">
+        <span class="tab-icon">⚡</span>
+        <span class="tab-label">Ego</span>
+      </button>
+    </nav>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
