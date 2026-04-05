@@ -279,45 +279,61 @@ function deleteLogEntry(ts) {
 function attachSwipe(row) {
   const content = row.querySelector(".swipe-content");
   const delBtn = row.querySelector(".swipe-delete");
-  let startX = 0, currentX = 0, dragging = false, moved = false;
+  let startX = 0, startY = 0, dragging = false, moved = false, axis = null;
+  const baseOpen = -SWIPE_THRESHOLD;
 
   const onStart = (e) => {
     if (activeSwipe && activeSwipe !== row) closeActiveSwipe();
     const touch = e.touches ? e.touches[0] : e;
     startX = touch.clientX;
-    currentX = 0;
+    startY = touch.clientY;
     dragging = true;
     moved = false;
+    axis = null;
     content.style.transition = "none";
   };
   const onMove = (e) => {
     if (!dragging) return;
     const touch = e.touches ? e.touches[0] : e;
-    let dx = touch.clientX - startX;
-    // If the row is already open, add the base offset
-    const base = activeSwipe === row ? -SWIPE_THRESHOLD : 0;
-    dx = Math.min(0, Math.max(-120, base + dx));
-    if (Math.abs(dx - base) > 4) moved = true;
+    const dxRaw = touch.clientX - startX;
+    const dyRaw = touch.clientY - startY;
+
+    // Lock direction on first meaningful movement
+    if (!axis) {
+      if (Math.abs(dxRaw) < 6 && Math.abs(dyRaw) < 6) return;
+      axis = Math.abs(dxRaw) > Math.abs(dyRaw) ? "x" : "y";
+    }
+    if (axis !== "x") return;
+
+    // We're swiping horizontally — block the list from scrolling
+    if (e.cancelable) e.preventDefault();
+
+    const base = activeSwipe === row ? baseOpen : 0;
+    let dx = Math.min(0, Math.max(-120, base + dxRaw));
+    moved = true;
     content.style.transform = `translateX(${dx}px)`;
   };
-  const onEnd = (e) => {
+  const onEnd = () => {
     if (!dragging) return;
     dragging = false;
+    if (axis !== "x") { axis = null; return; }
     content.style.transition = "transform .2s ease";
-    const m = content.style.transform.match(/-?\d+/);
+    const m = content.style.transform.match(/-?\d+(\.\d+)?/);
     const dx = m ? parseFloat(m[0]) : 0;
     if (dx <= -SWIPE_THRESHOLD / 2) {
-      content.style.transform = `translateX(-${SWIPE_THRESHOLD}px)`;
+      content.style.transform = `translateX(${baseOpen}px)`;
       activeSwipe = row;
     } else {
       content.style.transform = "translateX(0)";
       if (activeSwipe === row) activeSwipe = null;
     }
+    axis = null;
   };
 
   row.addEventListener("touchstart", onStart, { passive: true });
-  row.addEventListener("touchmove", onMove, { passive: true });
+  row.addEventListener("touchmove", onMove, { passive: false });
   row.addEventListener("touchend", onEnd);
+  row.addEventListener("touchcancel", onEnd);
   row.addEventListener("mousedown", onStart);
   row.addEventListener("mousemove", (e) => { if (dragging) onMove(e); });
   row.addEventListener("mouseup", onEnd);
@@ -329,9 +345,9 @@ function attachSwipe(row) {
     deleteLogEntry(ts);
   });
 
-  // Tap elsewhere closes the open swipe
-  content.addEventListener("click", () => {
-    if (moved) return;
+  // Tap content closes the row if it's open, otherwise do nothing
+  content.addEventListener("click", (e) => {
+    if (moved) { e.preventDefault(); e.stopPropagation(); return; }
     if (activeSwipe === row) closeActiveSwipe();
   });
 }
