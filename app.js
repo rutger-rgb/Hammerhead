@@ -281,39 +281,57 @@ showSplash();
 /* ===================================================================
    ONBOARDING — first visit ever
    =================================================================== */
+let onboardSlide = 0;
+function onboardGo(n) {
+  const ob = $("#onboarding");
+  if (!ob) return;
+  const slides = ob.querySelectorAll(".onboard-slide");
+  const dots = ob.querySelectorAll(".onboard-dot");
+  const nextBtn = $("#onboardNext");
+  if (n < 0) n = 0;
+  if (n > slides.length - 1) n = slides.length - 1;
+  onboardSlide = n;
+  slides.forEach((s, i) => s.classList.toggle("active", i === n));
+  dots.forEach((d, i) => d.classList.toggle("active", i === n));
+  if (nextBtn) nextBtn.textContent = n === slides.length - 1 ? "Aan de slag" : "Volgende";
+  haptic("tabSwitch");
+}
+function onboardFinish() {
+  const ob = $("#onboarding");
+  if (!ob) return;
+  localStorage.setItem("hh_onboarded", "1");
+  ob.style.animation = "fadeIn .4s var(--ease-smooth) reverse forwards";
+  setTimeout(() => ob.remove(), 450);
+  haptic("achievement");
+}
 function showOnboarding() {
   if (localStorage.getItem("hh_onboarded")) return;
   const ob = $("#onboarding");
   if (!ob) return;
-  // Delay until after splash
+  // Attach listeners IMMEDIATELY — never lose a click to timing races
+  const nextBtn = $("#onboardNext");
+  const skipBtn = $("#onboardSkip");
+  if (nextBtn) {
+    nextBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const slides = ob.querySelectorAll(".onboard-slide");
+      if (onboardSlide < slides.length - 1) onboardGo(onboardSlide + 1);
+      else onboardFinish();
+    });
+  }
+  if (skipBtn) {
+    skipBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onboardFinish();
+    });
+  }
+  // Reveal after a short delay so splash gets its moment
   setTimeout(() => {
     ob.hidden = false;
-    let slide = 0;
-    const slides = ob.querySelectorAll(".onboard-slide");
-    const dots = ob.querySelectorAll(".onboard-dot");
-    const nextBtn = $("#onboardNext");
-
-    function go(n) {
-      slide = n;
-      slides.forEach((s, i) => s.classList.toggle("active", i === n));
-      dots.forEach((d, i) => d.classList.toggle("active", i === n));
-      nextBtn.textContent = n === slides.length - 1 ? "Aan de slag" : "Volgende";
-      haptic("tabSwitch");
-    }
-
-    nextBtn.addEventListener("click", () => {
-      if (slide < slides.length - 1) go(slide + 1);
-      else finish();
-    });
-    $("#onboardSkip").addEventListener("click", finish);
-
-    function finish() {
-      localStorage.setItem("hh_onboarded", "1");
-      ob.style.animation = "fadeIn .4s reverse";
-      setTimeout(() => ob.remove(), 400);
-      haptic("achievement");
-    }
-  }, 2200);
+    onboardGo(0);
+  }, 300);
 }
 showOnboarding();
 
