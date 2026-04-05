@@ -1591,9 +1591,16 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
-/* Notifications */
+/* Notifications
+ * Browsers cannot revoke OS permission from JS — once granted it's granted
+ * at the system level. So we add an app-level mute toggle that suppresses
+ * notifications even when permission is still granted. Stored in localStorage. */
+const NOTIF_MUTED_KEY = "hh_notifications_muted";
 const notifBtn = $("#enableNotif");
 const notifCard = $("#notifCard");
+const isNotifMuted = () => localStorage.getItem(NOTIF_MUTED_KEY) === "1";
+const setNotifMuted = (v) => v ? localStorage.setItem(NOTIF_MUTED_KEY, "1") : localStorage.removeItem(NOTIF_MUTED_KEY);
+
 function updateNotifUi() {
   if (!("Notification" in window)) {
     notifBtn.textContent = "Niet ondersteund";
@@ -1601,17 +1608,35 @@ function updateNotifUi() {
     return;
   }
   if (Notification.permission === "granted") {
-    notifBtn.textContent = "Aan ✓";
-    notifCard.classList.add("enabled");
+    if (isNotifMuted()) {
+      notifBtn.textContent = "Aanzetten";
+      notifCard.classList.remove("enabled");
+    } else {
+      notifBtn.textContent = "Aan ✓ — tik om uit";
+      notifCard.classList.add("enabled");
+    }
   } else if (Notification.permission === "denied") {
     notifBtn.textContent = "Geblokkeerd";
+  } else {
+    notifBtn.textContent = "Aanzetten";
   }
 }
 notifBtn.addEventListener("click", async () => {
   if (!("Notification" in window)) return;
-  const p = await Notification.requestPermission();
-  if (p === "granted") {
-    new Notification("Hammerhead HQ", { body: "Je krijgt nu meldingen bij nieuwe artikelen 🦈", icon: "icon.svg" });
+  if (Notification.permission === "granted") {
+    // Toggle app-level mute
+    const nowMuted = !isNotifMuted();
+    setNotifMuted(nowMuted);
+    haptic("tabSwitch");
+    toast(nowMuted ? "Meldingen uit" : "Meldingen aan");
+  } else if (Notification.permission === "default") {
+    const p = await Notification.requestPermission();
+    if (p === "granted") {
+      setNotifMuted(false);
+      new Notification("Hammerhead HQ", { body: "Je krijgt nu meldingen bij nieuwe artikelen 🗿", icon: "icon.svg" });
+    }
+  } else if (Notification.permission === "denied") {
+    toast("Meldingen staan geblokkeerd in Safari instellingen");
   }
   updateNotifUi();
 });
@@ -1828,6 +1853,7 @@ async function registerSW() {
 
 async function showArticleNotification(article, swReg) {
   if (!("Notification" in window) || Notification.permission !== "granted") return;
+  if (isNotifMuted()) return;
   const opts = {
     body: article.title + (article.description ? " — " + article.description : ""),
     icon: "icon.svg",
