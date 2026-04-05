@@ -241,6 +241,106 @@ $$(".seg-btn").forEach((b) =>
   })
 );
 
+/* Swipe-to-delete voor migraine-log items */
+const SWIPE_THRESHOLD = 80;
+let activeSwipe = null; // currently open swipe row
+
+function closeActiveSwipe() {
+  if (activeSwipe) {
+    const c = activeSwipe.querySelector(".swipe-content");
+    if (c) c.style.transform = "translateX(0)";
+    activeSwipe = null;
+  }
+}
+
+function deleteLogEntry(ts) {
+  const cur = loadLogs();
+  const idx = cur.lastIndexOf(ts);
+  if (idx >= 0) cur.splice(idx, 1);
+  saveLogs(cur);
+  renderMigraine();
+  if (supa) {
+    supa.from("migraines").delete().eq("ts", new Date(ts).toISOString()).then(() => {});
+  }
+  if (navigator.vibrate) navigator.vibrate(15);
+  toast("Aanval verwijderd", {
+    actionLabel: "Terug",
+    duration: 4000,
+    onAction: () => {
+      const c = loadLogs();
+      c.push(ts);
+      saveLogs(c);
+      renderMigraine();
+      if (supa) pushMigraine(ts);
+    },
+  });
+}
+
+function attachSwipe(row) {
+  const content = row.querySelector(".swipe-content");
+  const delBtn = row.querySelector(".swipe-delete");
+  let startX = 0, currentX = 0, dragging = false, moved = false;
+
+  const onStart = (e) => {
+    if (activeSwipe && activeSwipe !== row) closeActiveSwipe();
+    const touch = e.touches ? e.touches[0] : e;
+    startX = touch.clientX;
+    currentX = 0;
+    dragging = true;
+    moved = false;
+    content.style.transition = "none";
+  };
+  const onMove = (e) => {
+    if (!dragging) return;
+    const touch = e.touches ? e.touches[0] : e;
+    let dx = touch.clientX - startX;
+    // If the row is already open, add the base offset
+    const base = activeSwipe === row ? -SWIPE_THRESHOLD : 0;
+    dx = Math.min(0, Math.max(-120, base + dx));
+    if (Math.abs(dx - base) > 4) moved = true;
+    content.style.transform = `translateX(${dx}px)`;
+  };
+  const onEnd = (e) => {
+    if (!dragging) return;
+    dragging = false;
+    content.style.transition = "transform .2s ease";
+    const m = content.style.transform.match(/-?\d+/);
+    const dx = m ? parseFloat(m[0]) : 0;
+    if (dx <= -SWIPE_THRESHOLD / 2) {
+      content.style.transform = `translateX(-${SWIPE_THRESHOLD}px)`;
+      activeSwipe = row;
+    } else {
+      content.style.transform = "translateX(0)";
+      if (activeSwipe === row) activeSwipe = null;
+    }
+  };
+
+  row.addEventListener("touchstart", onStart, { passive: true });
+  row.addEventListener("touchmove", onMove, { passive: true });
+  row.addEventListener("touchend", onEnd);
+  row.addEventListener("mousedown", onStart);
+  row.addEventListener("mousemove", (e) => { if (dragging) onMove(e); });
+  row.addEventListener("mouseup", onEnd);
+  row.addEventListener("mouseleave", () => { if (dragging) onEnd(); });
+
+  delBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const ts = parseInt(row.dataset.ts, 10);
+    deleteLogEntry(ts);
+  });
+
+  // Tap elsewhere closes the open swipe
+  content.addEventListener("click", () => {
+    if (moved) return;
+    if (activeSwipe === row) closeActiveSwipe();
+  });
+}
+
+// Global: tap outside the list closes any open swipe
+document.addEventListener("click", (e) => {
+  if (activeSwipe && !e.target.closest(".swipe-row")) closeActiveSwipe();
+});
+
 function renderMigraine() {
   const logs = loadLogs().sort((a, b) => b - a);
   const now = new Date();
@@ -265,19 +365,23 @@ function renderMigraine() {
   const list = $("#logList");
   list.innerHTML = "";
   if (!logs.length) {
-    list.innerHTML = '<li style="justify-content:center;color:var(--muted)">Niks. Lekker rustig daar boven.</li>';
+    list.innerHTML = '<li class="empty"><span>Niks. Lekker rustig daar boven.</span></li>';
   } else {
     logs.slice(0, 20).forEach((t) => {
       const li = document.createElement("li");
+      li.className = "swipe-row";
+      li.dataset.ts = t;
       const d = new Date(t);
-      li.innerHTML = `<span>${d.toLocaleDateString("nl-NL", {
-        weekday: "short",
-        day: "numeric",
-        month: "short",
-      })}</span><span class="when">${d.toLocaleTimeString("nl-NL", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })}</span>`;
+      const dateStr = d.toLocaleDateString("nl-NL", { weekday: "short", day: "numeric", month: "short" });
+      const timeStr = d.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" });
+      li.innerHTML = `
+        <div class="swipe-content">
+          <span>${dateStr}</span>
+          <span class="when">${timeStr}</span>
+        </div>
+        <button class="swipe-delete" aria-label="Verwijder deze aanval">Wissen</button>
+      `;
+      attachSwipe(li);
       list.appendChild(li);
     });
   }
