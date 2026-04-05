@@ -172,13 +172,14 @@ if (instapaperEl && instapaperUrl) {
 }
 
 /* ===================================================================
-   INSTAPAPER RSS AUTO-SYNC
+   INSTAPAPER AUTO-SYNC via public profile scrape
    -----------------------------------------------------------------
-   Fetches the user's personal Instapaper RSS feed (Liked/Unread/folder)
-   via rss2json.com (free CORS-friendly proxy) and renders items as
-   articles. Cached for 10 minutes in localStorage to avoid hammering.
+   Fetches the user's Instapaper public profile page through a CORS
+   proxy, parses the HTML for article entries, and renders them in
+   the Leesvoer tab. Cached 10 minutes in localStorage. No RSS token
+   needed — just the public profile URL in config.js.
    =================================================================== */
-const INSTAPAPER_CACHE_KEY = "hh_instapaper_cache_v1";
+const INSTAPAPER_CACHE_KEY = "hh_instapaper_cache_v2";
 const INSTAPAPER_TTL = 10 * 60 * 1000; // 10 minutes
 
 function loadInstapaperCache() {
@@ -198,34 +199,134 @@ function stripHtml(s) {
   return (div.textContent || "").trim().replace(/\s+/g, " ").slice(0, 240);
 }
 
-async function fetchInstapaperFeed() {
-  const rssUrl = window.HH_CONFIG && window.HH_CONFIG.INSTAPAPER_RSS_URL;
-  if (!rssUrl) return null;
+async function fetchViaProxies(targetUrl) {
+  const proxies = [
+    (u) => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+    (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+    (u) => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(u)}`,
+  ];
+  for (const build of proxies) {
+    try {
+      const res = await fetch(build(targetUrl), { cache: "no-store" });
+      if (!res.ok) continue;
+      const text = await res.text();
+      if (text && text.length > 500) return text;
+    } catch (e) { /* try next */ }
+  }
+  return null;
+}
 
-  // Use cached if recent
+function parseInstapaperProfile(html) {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const items = [];
+  const seen = new Set();
+
+  // Strategy 1: Look for known Instapaper article container classes
+  const selectors = [
+    "article.item",
+    ".article_item",
+    "article.article",
+    ".article.profile_article",
+    "li.article",
+    "div.article",
+    "article",
+  ];
+
+  let containers = [];
+  for (const sel of selectors) {
+    const found = doc.querySelectorAll(sel);
+    if (found.length > 0) {
+      containers = found;
+      break;
+    }
+  }
+
+  containers.forEach((el) => {
+    // Find the first outbound link inside this container
+    const links = el.querySelectorAll("a[href]");
+    let outbound = null;
+    for (const a of links) {
+      const href = a.getAttribute("href") || "";
+      if (href && !href.startsWith("#") && !href.startsWith("javascript:") && !href.includes("instapaper.com") && !href.startsWith("/")) {
+        outbound = a;
+        break;
+      }
+    }
+    if (!outbound) return;
+    const url = outbound.href;
+    if (seen.has(url)) return;
+    seen.add(url);
+
+    // Title: either the link text, or a heading inside the container
+    let title = (outbound.textContent || "").trim();
+    const heading = el.querySelector("h1, h2, h3, .title");
+    if (heading && heading.textContent.trim().length > title.length) {
+      title = heading.textContent.trim();
+    }
+    title = title.replace(/\s+/g, " ").slice(0, 200);
+
+    // Description: first <p> or .description/.summary
+    const descEl = el.querySelector(".description, .summary, .excerpt, p");
+    const desc = descEl ? stripHtml(descEl.innerHTML) : "";
+
+    if (title.length >= 4) {
+      items.push({
+        id: "ip-" + url,
+        title,
+        url,
+        desc,
+        ts: Date.now() - items.length * 1000, // preserve order
+        source: "instapaper",
+      });
+    }
+  });
+
+  // Strategy 2: fallback — scan all outbound links
+  if (items.length === 0) {
+    const allLinks = doc.querySelectorAll("a[href]");
+    allLinks.forEach((a) => {
+      const href = a.getAttribute("href") || "";
+      if (!href || href.startsWith("#") || href.startsWith("javascript:")) return;
+      if (href.includes("instapaper.com")) return;
+      if (href.startsWith("/")) return;
+      if (!/^https?:\/\//.test(href)) return;
+      const url = a.href;
+      if (seen.has(url)) return;
+      const title = (a.textContent || "").trim().replace(/\s+/g, " ");
+      if (title.length < 15) return; // Skip nav links
+      seen.add(url);
+      items.push({
+        id: "ip-" + url,
+        title: title.slice(0, 200),
+        url,
+        desc: "",
+        ts: Date.now() - items.length * 1000,
+        source: "instapaper",
+      });
+    });
+  }
+
+  return items;
+}
+
+async function fetchInstapaperFeed() {
+  const profileUrl = window.HH_CONFIG && window.HH_CONFIG.INSTAPAPER_URL;
+  if (!profileUrl) return null;
+
   const cached = loadInstapaperCache();
   const now = Date.now();
   if (cached && now - cached.ts < INSTAPAPER_TTL) return cached.items;
 
   try {
-    const api = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
-    const res = await fetch(api);
-    if (!res.ok) throw new Error("rss2json returned " + res.status);
-    const data = await res.json();
-    if (data.status !== "ok" || !Array.isArray(data.items)) throw new Error("bad response");
-    const items = data.items.map((it) => ({
-      id: "ip-" + (it.guid || it.link),
-      title: it.title || "(geen titel)",
-      url: it.link,
-      desc: stripHtml(it.description) || "",
-      ts: it.pubDate ? new Date(it.pubDate).getTime() : Date.now(),
-      source: "instapaper",
-    }));
+    const html = await fetchViaProxies(profileUrl);
+    if (!html) throw new Error("all proxies failed");
+    const items = parseInstapaperProfile(html);
+    if (items.length === 0) throw new Error("no articles parsed");
     localStorage.setItem(INSTAPAPER_CACHE_KEY, JSON.stringify({ ts: now, items }));
     return items;
   } catch (e) {
-    console.warn("Instapaper feed fetch failed", e);
-    if (cached) return cached.items; // stale fallback
+    console.warn("Instapaper scrape failed", e);
+    if (cached) return cached.items;
     return null;
   }
 }
