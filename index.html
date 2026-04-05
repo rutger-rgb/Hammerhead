@@ -61,6 +61,32 @@
           </div>
         </div>
 
+        <div class="card insights-card">
+          <div class="card-head">
+            <h3>Inzichten</h3>
+            <button id="migraineMode" class="icon-btn" aria-label="Migraine modus" title="Migraine modus">🌑</button>
+          </div>
+          <div class="insights-grid">
+            <div class="insight">
+              <div class="insight-num" id="streakCurrent">—</div>
+              <div class="insight-label">dagen pijnvrij</div>
+            </div>
+            <div class="insight">
+              <div class="insight-num" id="streakLongest">—</div>
+              <div class="insight-label">langste streak</div>
+            </div>
+            <div class="insight">
+              <div class="insight-num" id="avgMonth">—</div>
+              <div class="insight-label">gem. per maand</div>
+            </div>
+            <div class="insight">
+              <div class="insight-num" id="trendYoY">—</div>
+              <div class="insight-label">t.o.v. vorig jaar</div>
+            </div>
+          </div>
+          <div id="insightBlurb" class="insight-blurb"></div>
+        </div>
+
         <div class="card chart-card">
           <div class="card-head">
             <h3>Aanvallen per maand</h3>
@@ -122,12 +148,26 @@
 
         <div class="admin-panel" id="adminPanel" hidden>
           <h3>Webmaster modus 🛠️</h3>
-          <input id="artTitle" placeholder="Titel" />
-          <input id="artUrl" placeholder="https://..." />
-          <textarea id="artDesc" placeholder="Korte intro voor Jurriën"></textarea>
-          <div class="row">
-            <button id="addArticle" class="btn-primary">Publiceren</button>
-            <button id="exitAdmin" class="btn-ghost">Sluiten</button>
+          <div class="admin-tabs">
+            <button class="admin-tab active" data-admin="art">Artikel</button>
+            <button class="admin-tab" data-admin="quote">Quote</button>
+          </div>
+          <div class="admin-section" id="adminArt">
+            <input id="artTitle" placeholder="Titel" />
+            <input id="artUrl" placeholder="https://..." />
+            <textarea id="artDesc" placeholder="Korte intro voor Jurriën"></textarea>
+            <div class="row">
+              <button id="addArticle" class="btn-primary">Publiceren</button>
+              <button id="exitAdmin" class="btn-ghost">Sluiten</button>
+            </div>
+          </div>
+          <div class="admin-section" id="adminQuote" hidden>
+            <textarea id="quoteText" placeholder="Exact verbatim citaat"></textarea>
+            <input id="quoteSource" placeholder="Bron (bv. de Volkskrant, 2022)" />
+            <div class="row">
+              <button id="addQuote" class="btn-primary">Quote toevoegen</button>
+              <button id="exitAdmin2" class="btn-ghost">Sluiten</button>
+            </div>
           </div>
         </div>
       </section>
@@ -177,6 +217,7 @@
     </nav>
   </div>
 
+  <button id="exitMigraineMode" aria-label="Migraine modus verlaten">✕</button>
   <div id="toast" class="toast"></div>
 
   <script src="app.js"></script>

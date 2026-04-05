@@ -412,3 +412,131 @@ blockquote#blurbText {
 
 /* Chart canvas */
 #chart { width: 100% !important; height: 180px !important; }
+
+/* Insights */
+.insights-card .card-head h3 { font-size: 15px; }
+.icon-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .15s ease, background .15s ease;
+}
+.icon-btn:active { transform: scale(0.9); }
+.insights-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 4px;
+}
+.insight {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.insight-num {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.insight-num.good { color: var(--green); }
+.insight-num.bad { color: var(--accent); }
+.insight-label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
+}
+.insight-blurb {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: rgba(48, 209, 88, 0.08);
+  border: 1px solid rgba(48, 209, 88, 0.2);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--text);
+  display: none;
+}
+.insight-blurb.show { display: block; }
+.insight-blurb.bad {
+  background: rgba(255, 45, 85, 0.08);
+  border-color: rgba(255, 45, 85, 0.25);
+}
+
+/* Admin tabs */
+.admin-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.admin-tab {
+  flex: 1;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.admin-tab.active { color: var(--text); background: var(--card); border-color: rgba(255,255,255,0.15); }
+
+/* ============================================================
+   MIGRAINE MODUS — alles dimmen, alleen de rode knop blijft
+   ============================================================ */
+body.migraine-mode {
+  background: #000 !important;
+}
+body.migraine-mode #app {
+  padding-bottom: 0;
+}
+body.migraine-mode .topbar,
+body.migraine-mode .tabbar,
+body.migraine-mode .hero,
+body.migraine-mode .stats-grid,
+body.migraine-mode .insights-card,
+body.migraine-mode .chart-card,
+body.migraine-mode .log-list,
+body.migraine-mode .card:not(.panic-only),
+body.migraine-mode .last-log {
+  display: none !important;
+}
+body.migraine-mode .view { display: none; }
+body.migraine-mode #view-migraine { display: block; }
+body.migraine-mode .panic-wrap {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+body.migraine-mode .panic {
+  width: 280px;
+  height: 280px;
+  box-shadow: 0 0 80px rgba(255, 45, 85, 0.35);
+  filter: brightness(0.75);
+}
+body.migraine-mode .panic-ring { opacity: 0.3; }
+#exitMigraineMode {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 14px);
+  right: 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.4);
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  font-size: 16px;
+  display: none;
+  z-index: 100;
+  cursor: pointer;
+}
+body.migraine-mode #exitMigraineMode { display: flex; align-items: center; justify-content: center; }

@@ -46,6 +46,25 @@ panicBtn.addEventListener("click", () => {
   renderMigraine();
 });
 
+/* Migraine modus — dim alles behalve de rode knop */
+function setMigraineMode(on) {
+  document.body.classList.toggle("migraine-mode", on);
+  if (on) {
+    // Make sure we're on the migraine tab
+    $$(".tab").forEach((t) => t.classList.toggle("active", t.dataset.view === "view-migraine"));
+    $$(".view").forEach((v) => v.classList.toggle("active", v.id === "view-migraine"));
+  }
+}
+$("#migraineMode").addEventListener("click", () => {
+  setMigraineMode(true);
+  if (navigator.vibrate) navigator.vibrate(20);
+  toast("Migraine modus — tik op ✕ om terug te keren");
+});
+$("#exitMigraineMode").addEventListener("click", () => {
+  setMigraineMode(false);
+  if (navigator.vibrate) navigator.vibrate(10);
+});
+
 $("#clearLogs").addEventListener("click", () => {
   if (!confirm("Alle migraine-logs wissen? Dit kan niet ongedaan worden gemaakt.")) return;
   saveLogs([]);
@@ -104,6 +123,88 @@ function renderMigraine() {
   }
 
   renderChart();
+  renderInsights(logs);
+}
+
+function renderInsights(logs) {
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const DAY = 86400000;
+
+  // Current streak: days since last attack
+  let currentStreak = "—";
+  if (logs.length) {
+    const last = Math.max(...logs);
+    const lastDay = new Date(last);
+    const lastDayStart = new Date(lastDay.getFullYear(), lastDay.getMonth(), lastDay.getDate()).getTime();
+    currentStreak = Math.floor((startOfToday - lastDayStart) / DAY);
+  }
+
+  // Longest streak ever: biggest gap between attacks (incl. current streak)
+  let longest = 0;
+  if (logs.length >= 2) {
+    const sorted = [...logs].sort((a, b) => a - b);
+    for (let i = 1; i < sorted.length; i++) {
+      const d1 = new Date(sorted[i - 1]);
+      const d2 = new Date(sorted[i]);
+      const s1 = new Date(d1.getFullYear(), d1.getMonth(), d1.getDate()).getTime();
+      const s2 = new Date(d2.getFullYear(), d2.getMonth(), d2.getDate()).getTime();
+      const gap = Math.floor((s2 - s1) / DAY);
+      if (gap > longest) longest = gap;
+    }
+  }
+  if (typeof currentStreak === "number" && currentStreak > longest) longest = currentStreak;
+
+  // Average per month this year
+  const thisYear = now.getFullYear();
+  const thisYearLogs = logs.filter((t) => new Date(t).getFullYear() === thisYear);
+  const monthsElapsed = now.getMonth() + 1;
+  const avgMonth = thisYearLogs.length ? (thisYearLogs.length / monthsElapsed).toFixed(1) : "0";
+
+  // YoY trend
+  const lastYear = thisYear - 1;
+  const lastYearLogs = logs.filter((t) => new Date(t).getFullYear() === lastYear);
+  let trend = "—";
+  let trendClass = "";
+  if (lastYearLogs.length > 0) {
+    // Compare same months-elapsed window
+    const lastYearSameWindow = lastYearLogs.filter((t) => {
+      const d = new Date(t);
+      return d.getMonth() < monthsElapsed || (d.getMonth() === now.getMonth() - 1 && d.getDate() <= now.getDate());
+    }).length;
+    if (lastYearSameWindow > 0) {
+      const diff = Math.round(((thisYearLogs.length - lastYearSameWindow) / lastYearSameWindow) * 100);
+      trend = (diff >= 0 ? "+" : "") + diff + "%";
+      trendClass = diff <= 0 ? "good" : "bad";
+    }
+  }
+
+  $("#streakCurrent").textContent = currentStreak;
+  $("#streakCurrent").className = "insight-num" + (typeof currentStreak === "number" && currentStreak >= 7 ? " good" : "");
+  $("#streakLongest").textContent = longest || "—";
+  $("#avgMonth").textContent = avgMonth;
+  $("#trendYoY").textContent = trend;
+  $("#trendYoY").className = "insight-num " + trendClass;
+
+  // Insight blurb
+  const blurb = $("#insightBlurb");
+  blurb.className = "insight-blurb";
+  blurb.textContent = "";
+  if (typeof currentStreak === "number") {
+    if (currentStreak >= 30) {
+      blurb.textContent = `🎉 ${currentStreak} dagen pijnvrij — dit is een winstreak.`;
+      blurb.classList.add("show");
+    } else if (currentStreak >= 14) {
+      blurb.textContent = `💪 ${currentStreak} dagen pijnvrij. De hamer ligt in de kast.`;
+      blurb.classList.add("show");
+    } else if (currentStreak === 0 && logs.length) {
+      blurb.textContent = `Vandaag een aanval. Zorg goed voor jezelf — wij houden het bij.`;
+      blurb.classList.add("show", "bad");
+    } else if (trendClass === "good" && trend !== "—") {
+      blurb.textContent = `📉 Je hebt ${Math.abs(parseInt(trend))}% minder aanvallen dan vorig jaar rond deze tijd.`;
+      blurb.classList.add("show");
+    }
+  }
 }
 
 function formatRelative(ts) {
@@ -390,6 +491,31 @@ $("#addArticle").addEventListener("click", () => {
   toast("Artikel gepubliceerd");
 });
 $("#exitAdmin").addEventListener("click", () => ($("#adminPanel").hidden = true));
+$("#exitAdmin2").addEventListener("click", () => ($("#adminPanel").hidden = true));
+
+/* Admin section tabs */
+$$(".admin-tab").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    $$(".admin-tab").forEach((b) => b.classList.toggle("active", b === btn));
+    const which = btn.dataset.admin;
+    $("#adminArt").hidden = which !== "art";
+    $("#adminQuote").hidden = which !== "quote";
+  });
+});
+
+/* Add a real quote from admin mode */
+$("#addQuote").addEventListener("click", () => {
+  const text = $("#quoteText").value.trim();
+  const source = $("#quoteSource").value.trim();
+  if (!text || !source) return toast("Tekst en bron zijn verplicht");
+  const quotes = loadCustomQuotes();
+  quotes.push({ text, source });
+  saveCustomQuotes(quotes);
+  BLURBS = buildBlurbs();
+  $("#quoteText").value = "";
+  $("#quoteSource").value = "";
+  toast("Quote toegevoegd ✨");
+});
 
 /* ===================================================================
    4. EGO TAB
@@ -415,6 +541,14 @@ const REAL_QUOTES = [
     text: "Zijn bespiegelingen over rechtvaardigheid en waardigheid zijn aantrekkelijk en overtuigend.",
     source: "Het Financieele Dagblad",
   },
+  {
+    text: "Een prachtig boek dat de vloer aanveegt met vanzelfsprekendheden.",
+    source: "iFilosofie",
+  },
+  {
+    text: "Hamer is de horzel die onze samenleving hard nodig heeft.",
+    source: "iFilosofie",
+  },
 ];
 
 const BREGMAN_BLURBS = [
@@ -432,10 +566,18 @@ const BREGMAN_BLURBS = [
   "Als ik één boek zou mogen aanraden aan iemand die nog nooit over ethiek heeft nagedacht: dat van Hamer. Geen twijfel.",
 ];
 
-const BLURBS = [
-  ...REAL_QUOTES,
-  ...BREGMAN_BLURBS.map((text) => ({ text, source: "Rutger Bregman" })),
-];
+const CUSTOM_QUOTES_KEY = "hh_custom_quotes_v1";
+const loadCustomQuotes = () => JSON.parse(localStorage.getItem(CUSTOM_QUOTES_KEY) || "[]");
+const saveCustomQuotes = (arr) => localStorage.setItem(CUSTOM_QUOTES_KEY, JSON.stringify(arr));
+
+function buildBlurbs() {
+  return [
+    ...REAL_QUOTES,
+    ...loadCustomQuotes(),
+    ...BREGMAN_BLURBS.map((text) => ({ text, source: "Rutger Bregman" })),
+  ];
+}
+let BLURBS = buildBlurbs();
 
 let blurbIdx = -1;
 function nextBlurb() {
