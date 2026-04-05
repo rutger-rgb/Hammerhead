@@ -150,9 +150,55 @@ if (!sessionStorage.getItem("hh_logo_played")) {
   });
 }
 
-/* ===================================================================
-   HAPTIC CHOREOGRAPHY — different patterns per interaction
-   =================================================================== */
+/* Device tilt 3D on panic button — real perspective response */
+let tiltEnabled = false;
+let tiltBase = null;
+function handleTilt(e) {
+  const beta = e.beta || 0;  // front/back
+  const gamma = e.gamma || 0; // left/right
+  if (!tiltBase) tiltBase = { beta, gamma };
+  const dx = Math.max(-20, Math.min(20, gamma - tiltBase.gamma));
+  const dy = Math.max(-20, Math.min(20, beta - tiltBase.beta));
+  const root = document.documentElement;
+  root.style.setProperty("--tilt-y", (dx * 0.7) + "deg");
+  root.style.setProperty("--tilt-x", (-dy * 0.7) + "deg");
+  root.style.setProperty("--light-x", (32 + dx * 0.8) + "%");
+  root.style.setProperty("--light-y", (28 + dy * 0.8) + "%");
+  root.style.setProperty("--spec-x", (35 + dx * 1.5) + "%");
+  root.style.setProperty("--spec-y", (25 + dy * 1.5) + "%");
+}
+async function requestTilt() {
+  if (tiltEnabled) return;
+  // iOS 13+ requires explicit permission request triggered by user action
+  if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
+    try {
+      const state = await DeviceOrientationEvent.requestPermission();
+      if (state !== "granted") return;
+    } catch (e) { return; }
+  }
+  window.addEventListener("deviceorientation", handleTilt, { passive: true });
+  tiltEnabled = true;
+}
+// Kick off on first panic button press (ensures user gesture)
+document.addEventListener("click", (e) => {
+  if (e.target.closest("#panicBtn") || e.target.closest("#logoBtn")) {
+    requestTilt();
+  }
+}, { capture: true });
+// Desktop: mouse move simulates tilt
+if (!("ontouchstart" in window)) {
+  window.addEventListener("mousemove", (e) => {
+    const dx = (e.clientX / window.innerWidth - 0.5) * 30;
+    const dy = (e.clientY / window.innerHeight - 0.5) * 20;
+    const root = document.documentElement;
+    root.style.setProperty("--tilt-y", dx + "deg");
+    root.style.setProperty("--tilt-x", (-dy) + "deg");
+    root.style.setProperty("--light-x", (32 + dx) + "%");
+    root.style.setProperty("--light-y", (28 + dy) + "%");
+    root.style.setProperty("--spec-x", (35 + dx * 1.2) + "%");
+    root.style.setProperty("--spec-y", (25 + dy * 1.2) + "%");
+  });
+}
 const HAPTICS = {
   tabSwitch: [5],
   logAttack: [40, 60, 40, 60, 80],
@@ -696,8 +742,123 @@ function renderMigraine() {
   }
 
   renderHeatmap();
+  renderActivityRing(logs);
+  renderClockChart(logs);
   renderInsights(logs);
   updatePanicHeartbeat(logs);
+}
+
+/* Radial 24-hour clock showing when attacks happen */
+function renderClockChart(logs) {
+  const labels = $("#clockLabels");
+  const bars = $("#clockBars");
+  const peak = $("#clockPeakLabel");
+  if (!labels || !bars) return;
+
+  // Bucket by hour 0-23
+  const buckets = new Array(24).fill(0);
+  logs.forEach((t) => {
+    const h = new Date(t).getHours();
+    buckets[h]++;
+  });
+  const max = Math.max(1, ...buckets);
+
+  // Peak hour
+  const peakHour = buckets.indexOf(max);
+  if (peak) {
+    if (logs.length > 0) {
+      peak.textContent = `Piek rond ${String(peakHour).padStart(2, "0")}:00`;
+    } else {
+      peak.textContent = "Nog geen data";
+    }
+  }
+
+  // Labels (every 3 hours)
+  labels.innerHTML = "";
+  for (let i = 0; i < 24; i++) {
+    if (i % 3 !== 0) continue;
+    const angle = (i / 24) * Math.PI * 2 - Math.PI / 2;
+    const r = 105;
+    const x = Math.cos(angle) * r;
+    const y = Math.sin(angle) * r;
+    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    label.setAttribute("x", x);
+    label.setAttribute("y", y);
+    label.setAttribute("class", "clock-label" + (i % 6 === 0 ? " major" : ""));
+    label.textContent = String(i).padStart(2, "0");
+    labels.appendChild(label);
+  }
+
+  // Bars — radial lines from inner ring to outer proportional to count
+  bars.innerHTML = "";
+  for (let i = 0; i < 24; i++) {
+    if (buckets[i] === 0) continue;
+    const angle = (i / 24) * Math.PI * 2 - Math.PI / 2;
+    const inner = 18;
+    const outer = 18 + (buckets[i] / max) * 70;
+    const x1 = Math.cos(angle) * inner;
+    const y1 = Math.sin(angle) * inner;
+    const x2 = Math.cos(angle) * outer;
+    const y2 = Math.sin(angle) * outer;
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", x1);
+    line.setAttribute("y1", y1);
+    line.setAttribute("x2", x2);
+    line.setAttribute("y2", y2);
+    line.setAttribute("class", "clock-bar");
+    const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+    title.textContent = `${String(i).padStart(2, "0")}:00 — ${buckets[i]} aanval${buckets[i] === 1 ? "" : "len"}`;
+    line.appendChild(title);
+    bars.appendChild(line);
+  }
+}
+
+/* Apple Fitness–style activity ring: pain-free days this month */
+function renderActivityRing(logs) {
+  const now = new Date();
+  const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const daysElapsed = Math.floor((now - firstOfMonth) / 86400000) + 1;
+  // Days this month with at least one attack
+  const attackDays = new Set();
+  logs.forEach((t) => {
+    const d = new Date(t);
+    if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()) {
+      attackDays.add(d.getDate());
+    }
+  });
+  const painFree = daysElapsed - attackDays.size;
+  const pct = daysElapsed > 0 ? painFree / daysElapsed : 0;
+
+  const ring = $("#ringFill");
+  if (ring) {
+    const circumference = 2 * Math.PI * 82; // r = 82
+    const offset = circumference * (1 - Math.max(0, Math.min(1, pct)));
+    // Force reflow for initial animation
+    ring.style.strokeDashoffset = circumference;
+    requestAnimationFrame(() => {
+      ring.style.strokeDashoffset = offset;
+    });
+  }
+
+  const ringNum = $("#ringNum");
+  const ringSub = $("#ringSub");
+  const ringCaption = $("#ringCaption");
+  if (ringNum) animateNumber(ringNum, painFree);
+  if (ringSub) ringSub.textContent = `van ${daysElapsed} ${daysElapsed === 1 ? "dag" : "dagen"}`;
+  if (ringCaption) {
+    const monthName = now.toLocaleDateString("nl-NL", { month: "long" });
+    if (pct === 1 && daysElapsed > 1) {
+      ringCaption.textContent = `Een perfecte ${monthName} tot nu toe ✨`;
+    } else if (pct >= 0.9) {
+      ringCaption.textContent = `Uitstekende ${monthName}`;
+    } else if (pct >= 0.7) {
+      ringCaption.textContent = `Pijnvrije dagen in ${monthName}`;
+    } else if (pct >= 0.5) {
+      ringCaption.textContent = `Een gemengde ${monthName}`;
+    } else {
+      ringCaption.textContent = `Zware ${monthName} — hou vol`;
+    }
+  }
 }
 
 /* Panic button pulses faster when there have been recent attacks */
@@ -981,7 +1142,58 @@ $("#funkBtn").addEventListener("click", () => {
   embed.classList.add("active");
   if (navigator.vibrate) navigator.vibrate([10, 30, 10]);
   toast("🎶 " + track.title);
+  // Fetch Spotify oEmbed for the thumbnail, then extract dominant colors
+  fetchAlbumColors(track.id).catch(() => {});
 });
+
+/* Extract dominant colors from album art and bleed them across Funk tab */
+async function fetchAlbumColors(trackId) {
+  try {
+    const res = await fetch(`https://open.spotify.com/oembed?url=https://open.spotify.com/track/${trackId}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.thumbnail_url) return;
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = data.thumbnail_url;
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = reject;
+    });
+    const canvas = document.createElement("canvas");
+    const size = 48;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, size, size);
+    const pixels = ctx.getImageData(0, 0, size, size).data;
+    // Sample dominant + secondary colors by binning hues
+    const bins = {};
+    for (let i = 0; i < pixels.length; i += 16) {
+      const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      const lum = (max + min) / 2;
+      if (lum < 30 || lum > 230) continue; // Skip near-black/white
+      const sat = max === 0 ? 0 : (max - min) / max;
+      if (sat < 0.15) continue; // Skip grey
+      const key = `${Math.round(r / 32)}-${Math.round(g / 32)}-${Math.round(b / 32)}`;
+      bins[key] = (bins[key] || { r: 0, g: 0, b: 0, n: 0 });
+      bins[key].r += r; bins[key].g += g; bins[key].b += b; bins[key].n++;
+    }
+    const sorted = Object.values(bins).sort((a, b) => b.n - a.n).slice(0, 2);
+    if (sorted.length < 1) return;
+    const c1 = sorted[0];
+    const c2 = sorted[1] || sorted[0];
+    const col1 = `rgb(${Math.round(c1.r / c1.n)}, ${Math.round(c1.g / c1.n)}, ${Math.round(c1.b / c1.n)})`;
+    const col2 = `rgb(${Math.round(c2.r / c2.n)}, ${Math.round(c2.g / c2.n)}, ${Math.round(c2.b / c2.n)})`;
+    const root = document.documentElement;
+    root.style.setProperty("--funk-bleed-1", col1);
+    root.style.setProperty("--funk-bleed-2", col2);
+    document.body.classList.add("funk-bleed-active");
+  } catch (e) {
+    console.warn("color extract failed", e);
+  }
+}
 
 /* ===================================================================
    3. ARTIKELEN TAB

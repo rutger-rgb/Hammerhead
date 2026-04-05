@@ -119,6 +119,27 @@
           </div>
         </div>
 
+        <div class="card ring-card">
+          <div class="ring-wrap">
+            <svg class="activity-ring" viewBox="0 0 200 200">
+              <defs>
+                <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#ffd166"/>
+                  <stop offset="50%" stop-color="#ff8f40"/>
+                  <stop offset="100%" stop-color="#30d158"/>
+                </linearGradient>
+              </defs>
+              <circle class="ring-track" cx="100" cy="100" r="82" />
+              <circle class="ring-fill" id="ringFill" cx="100" cy="100" r="82" />
+            </svg>
+            <div class="ring-center">
+              <div class="ring-num" id="ringNum">—</div>
+              <div class="ring-sub" id="ringSub">van 0 dagen</div>
+            </div>
+          </div>
+          <div class="ring-caption" id="ringCaption">Pijnvrije dagen deze maand</div>
+        </div>
+
         <div class="card insights-card">
           <div class="card-head">
             <h3>Inzichten</h3>
@@ -159,6 +180,20 @@
             <span class="hm-box hm-3"></span>
             <span class="hm-box hm-4"></span>
             <span>Meer</span>
+          </div>
+        </div>
+
+        <div class="card clock-card">
+          <div class="card-head">
+            <h3>Wanneer op de dag?</h3>
+            <span class="muted" id="clockPeakLabel"></span>
+          </div>
+          <div class="clock-wrap">
+            <svg class="clock-chart" viewBox="-110 -110 220 220" id="clockChart">
+              <circle class="clock-ring" cx="0" cy="0" r="92" />
+              <g id="clockLabels"></g>
+              <g id="clockBars"></g>
+            </svg>
           </div>
         </div>
 
