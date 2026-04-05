@@ -115,18 +115,18 @@ body::before {
 
 /* Top bar */
 .topbar {
-  padding: calc(var(--safe-top) + 16px) 20px 8px;
+  padding: calc(var(--safe-top) + 22px) 22px 14px;
   position: sticky;
   top: 0;
   z-index: 10;
-  background: linear-gradient(180deg, rgba(10,10,15,0.92) 60%, rgba(10,10,15,0));
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: linear-gradient(180deg, rgba(10,10,15,0.95) 60%, rgba(10,10,15,0));
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
 }
-.brand { display: flex; align-items: center; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 16px; }
 .logo {
-  font-size: 30px;
-  filter: drop-shadow(0 4px 14px var(--glow-1));
+  font-size: 44px;
+  filter: drop-shadow(0 6px 18px var(--glow-1));
   background: none;
   border: none;
   padding: 4px;
@@ -157,14 +157,14 @@ body::before {
   font-optical-sizing: auto;
   font-variation-settings: "opsz" 144;
   font-weight: 800;
-  font-size: 19px;
-  letter-spacing: -0.025em;
+  font-size: 26px;
+  letter-spacing: -0.03em;
   line-height: 1;
 }
 .brand-sub {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
-  margin-top: 3px;
+  margin-top: 5px;
   letter-spacing: 0.01em;
 }
 

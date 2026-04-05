@@ -25,30 +25,31 @@ const supa = (() => {
 
 const SYNC_ENABLED = !!supa;
 
-/* One-time migration: clear the previously-seeded "greatest hits" articles
- * so only webmaster-published items remain, since the Leesvoer tab now
- * primarily points to Instapaper. Runs once ever. */
+/* Titles of the old curated articles that should no longer appear anywhere */
+const DEPRECATED_ARTICLE_TITLES = [
+  "BBC Reith Lectures 2025 — Moral Revolution",
+  "Why Europe Needs Ukraine — The Atlantic",
+  "Abolish the Tobacco Industry",
+  "De Davos-moment — 'Taxes, taxes, taxes'",
+  "Moral Ambition — de eerste voorpublicatie",
+  "Poverty Isn't a Lack of Character, It's a Lack of Cash",
+  "Post-Davos Weekend Interview — Bloomberg",
+  "From Taxing the Rich to Moral Ambition — CNN",
+  "Welkom in Hammerhead HQ",
+];
+
+/* Migration: clear seeded "greatest hits" articles from Supabase.
+ * Version bumped so it re-runs for users who already have the flag set. */
 async function migrateClearSeededArticles() {
   if (!supa) return;
-  if (localStorage.getItem("hh_articles_migration_v3")) return;
+  if (localStorage.getItem("hh_articles_migration_v4")) return;
   try {
-    // Delete any article whose title matches one of the old seed titles
-    const seedTitles = [
-      "BBC Reith Lectures 2025 — Moral Revolution",
-      "Why Europe Needs Ukraine — The Atlantic",
-      "Abolish the Tobacco Industry",
-      "De Davos-moment — 'Taxes, taxes, taxes'",
-      "Moral Ambition — de eerste voorpublicatie",
-      "Poverty Isn't a Lack of Character, It's a Lack of Cash",
-      "Post-Davos Weekend Interview — Bloomberg",
-      "From Taxing the Rich to Moral Ambition — CNN",
-      "Welkom in Hammerhead HQ",
-    ];
-    for (const title of seedTitles) {
+    for (const title of DEPRECATED_ARTICLE_TITLES) {
       await supa.from("articles").delete().eq("title", title);
     }
+    localStorage.setItem("hh_articles_migration_v4", "1");
     localStorage.setItem("hh_articles_migration_v3", "1");
-    localStorage.setItem("hh_articles_seeded_v2", "1"); // prevent re-seeding
+    localStorage.setItem("hh_articles_seeded_v2", "1");
   } catch (e) {
     console.warn("migrate articles failed", e);
   }
@@ -1375,7 +1376,9 @@ function updateAppBadge() {
 }
 
 function renderArticles() {
-  const arts = loadArticles().sort((a, b) => b.ts - a.ts);
+  const arts = loadArticles()
+    .filter((a) => !DEPRECATED_ARTICLE_TITLES.includes(a.title))
+    .sort((a, b) => b.ts - a.ts);
   const seen = loadSeen();
   const list = $("#articleList");
   list.innerHTML = "";
