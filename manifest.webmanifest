@@ -9,5 +9,35 @@
   "theme_color": "#0a0a0f",
   "icons": [
     { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Log migraine aanval",
+      "short_name": "Log aanval",
+      "description": "Direct naar de paniekknop",
+      "url": "./?shortcut=log",
+      "icons": [{ "src": "icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Random funk",
+      "short_name": "Funk",
+      "description": "Willekeurig groovy nummer",
+      "url": "./?shortcut=funk",
+      "icons": [{ "src": "icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Ego oplader",
+      "short_name": "Ego",
+      "description": "Een dosis zelfvertrouwen",
+      "url": "./?shortcut=ego",
+      "icons": [{ "src": "icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Nieuwste artikel",
+      "short_name": "Artikel",
+      "description": "Leesvoer van de webmaster",
+      "url": "./?shortcut=articles",
+      "icons": [{ "src": "icon.svg", "sizes": "any" }]
+    }
   ]
 }

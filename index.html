@@ -17,12 +17,23 @@
   <title>Hammerhead HQ — voor Jurriën</title>
 </head>
 <body>
-  <!-- Splash screen — shown once per session on first load -->
+  <!-- Splash screen — cinematic intro on first load per session -->
   <div id="splash" class="splash" hidden>
-    <div class="splash-bust">🗿</div>
-    <div class="splash-hammer">🔨</div>
-    <div class="splash-title">Hammerhead HQ</div>
+    <div class="splash-stars"></div>
+    <div class="splash-core">
+      <div class="splash-bust">🗿</div>
+      <div class="splash-hammer">🔨</div>
+      <div class="splash-flash"></div>
+    </div>
+    <div class="splash-title-wrap">
+      <h1 class="splash-title">
+        <span class="ch">H</span><span class="ch">A</span><span class="ch">M</span><span class="ch">M</span><span class="ch">E</span><span class="ch">R</span><span class="ch">H</span><span class="ch">E</span><span class="ch">A</span><span class="ch">D</span>
+        <span class="ch space">&nbsp;</span>
+        <span class="ch">H</span><span class="ch">Q</span>
+      </h1>
+    </div>
     <div class="splash-tagline">Filosoferen met de hamer</div>
+    <button class="splash-skip" id="splashSkip">Skip</button>
   </div>
 
   <!-- Onboarding — shown once ever on first visit -->
@@ -287,12 +298,31 @@
 
         <button id="nextBlurb" class="btn-primary wide">Nog een dosis 💊</button>
 
-        <div class="trophy">
-          <div class="trophy-icon">🏆</div>
-          <div>
-            <div class="trophy-title">Socrates Wisselbeker winnaar</div>
-            <div class="muted">Officieel toegestaan om jezelf een intellectueel te noemen.</div>
-          </div>
+        <div class="bookshelf">
+          <a class="book" href="https://www.debezigebij.nl/boek/waarom-schurken-pech-hebben-en-helden-geluk/" target="_blank" rel="noopener">
+            <img src="https://covers.openlibrary.org/b/isbn/9789403120119-L.jpg?default=false" alt="Waarom schurken pech hebben en helden geluk" loading="lazy" onerror="this.parentElement.classList.add('fallback');this.remove()" />
+            <div class="book-fallback">
+              <div class="book-fallback-title">Waarom schurken pech hebben en helden geluk</div>
+              <div class="book-fallback-author">Jurriën Hamer</div>
+            </div>
+            <div class="book-meta">
+              <div class="book-year">2021</div>
+              <div class="book-title">Waarom schurken pech hebben en helden geluk</div>
+              <div class="book-badge">🏆 Socrates Wisselbeker</div>
+            </div>
+          </a>
+          <a class="book" href="https://www.debezigebij.nl/boek/wat-vrijheid-van-je-vraagt/" target="_blank" rel="noopener">
+            <img src="https://covers.openlibrary.org/b/isbn/9789403129389-L.jpg?default=false" alt="Wat vrijheid van je vraagt" loading="lazy" onerror="this.parentElement.classList.add('fallback');this.remove()" />
+            <div class="book-fallback">
+              <div class="book-fallback-title">Wat vrijheid van je vraagt</div>
+              <div class="book-fallback-author">Jurriën Hamer</div>
+            </div>
+            <div class="book-meta">
+              <div class="book-year">2026</div>
+              <div class="book-title">Wat vrijheid van je vraagt</div>
+              <div class="book-badge">✨ Nieuw</div>
+            </div>
+          </a>
         </div>
       </section>
     </main>

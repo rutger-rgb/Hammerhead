@@ -125,18 +125,65 @@ function setMood(viewId) {
   Object.values(MOODS).forEach((m) => document.body.classList.remove(m));
   if (MOODS[viewId]) document.body.classList.add(MOODS[viewId]);
 }
+// Split hero headings into chars for letter-by-letter reveal
+function splitHeroText(h1) {
+  if (h1.dataset.split) return;
+  const text = h1.textContent;
+  h1.textContent = "";
+  [...text].forEach((c, i) => {
+    const span = document.createElement("span");
+    span.className = "ch" + (c === " " ? " space" : "");
+    span.textContent = c;
+    span.style.animationDelay = (i * 0.035) + "s";
+    h1.appendChild(span);
+  });
+  h1.dataset.split = "1";
+}
+document.querySelectorAll(".hero h1").forEach(splitHeroText);
+
+function replayHeroReveal(viewId) {
+  const h1 = document.querySelector(`#${viewId} .hero h1`);
+  if (!h1) return;
+  h1.querySelectorAll(".ch").forEach((ch) => {
+    ch.style.animation = "none";
+    // eslint-disable-next-line no-unused-expressions
+    ch.offsetHeight; // reflow
+    ch.style.animation = "";
+  });
+}
+
 $$(".tab").forEach((tab) => {
   tab.addEventListener("click", () => {
     const view = tab.dataset.view;
     $$(".tab").forEach((t) => t.classList.toggle("active", t === tab));
     $$(".view").forEach((v) => v.classList.toggle("active", v.id === view));
     setMood(view);
+    replayHeroReveal(view);
     if (navigator.vibrate) navigator.vibrate(6);
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 });
+// Handle manifest shortcut params (?shortcut=log/funk/ego/articles)
+const SHORTCUT_MAP = {
+  log: "view-migraine",
+  funk: "view-funk",
+  ego: "view-ego",
+  articles: "view-articles",
+};
+const urlParams = new URLSearchParams(window.location.search);
+const shortcut = urlParams.get("shortcut");
+const startView = SHORTCUT_MAP[shortcut] || "view-migraine";
+
 // Default mood on load
-setMood("view-migraine");
+setMood(startView);
+if (startView !== "view-migraine") {
+  $$(".tab").forEach((t) => t.classList.toggle("active", t.dataset.view === startView));
+  $$(".view").forEach((v) => v.classList.toggle("active", v.id === startView));
+}
+// Auto-trigger funk if shortcut=funk
+if (shortcut === "funk") {
+  setTimeout(() => $("#funkBtn")?.click(), 800);
+}
 
 // Logo intro animation — only first load per session
 if (!sessionStorage.getItem("hh_logo_played")) {
@@ -221,7 +268,13 @@ function showSplash() {
   if (!splash) return;
   splash.hidden = false;
   sessionStorage.setItem("hh_splash_seen", "1");
-  setTimeout(() => splash.remove(), 2500);
+  const remove = () => splash.remove();
+  setTimeout(remove, 5100);
+  const skip = document.getElementById("splashSkip");
+  if (skip) skip.addEventListener("click", () => {
+    splash.style.animation = "splashFade 0.4s forwards";
+    setTimeout(remove, 400);
+  });
 }
 showSplash();
 
@@ -1278,11 +1331,23 @@ const saveArticles = (arr) => localStorage.setItem(ART_KEY, JSON.stringify(arr))
 const loadSeen = () => JSON.parse(localStorage.getItem(SEEN_KEY) || "[]");
 const saveSeen = (arr) => localStorage.setItem(SEEN_KEY, JSON.stringify(arr));
 
+function updateAppBadge() {
+  try {
+    if (!("setAppBadge" in navigator)) return;
+    const arts = loadArticles();
+    const seen = new Set(loadSeen());
+    const unread = arts.filter((a) => !seen.has(a.id)).length;
+    if (unread > 0) navigator.setAppBadge(unread);
+    else navigator.clearAppBadge && navigator.clearAppBadge();
+  } catch (e) {}
+}
+
 function renderArticles() {
   const arts = loadArticles().sort((a, b) => b.ts - a.ts);
   const seen = loadSeen();
   const list = $("#articleList");
   list.innerHTML = "";
+  updateAppBadge();
   arts.forEach((a) => {
     const li = document.createElement("li");
     const isNew = !seen.includes(a.id);
@@ -1294,7 +1359,7 @@ function renderArticles() {
     list.appendChild(li);
   });
   // mark all seen after render
-  setTimeout(() => saveSeen(arts.map((a) => a.id)), 1500);
+  setTimeout(() => { saveSeen(arts.map((a) => a.id)); updateAppBadge(); }, 1500);
 }
 
 function escapeHtml(s) {
