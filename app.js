@@ -129,6 +129,33 @@ panicBtn.addEventListener("click", () => {
   pushMigraine(now);
 });
 
+/* Handmatig loggen op eerder tijdstip */
+const manualInput = $("#manualTime");
+// Prefill with current time (rounded down to nearest minute)
+function prefillManualTime() {
+  const d = new Date();
+  d.setSeconds(0, 0);
+  const pad = (n) => String(n).padStart(2, "0");
+  manualInput.value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+prefillManualTime();
+
+$("#manualLogBtn").addEventListener("click", () => {
+  const val = manualInput.value;
+  if (!val) return toast("Kies een tijdstip");
+  const ts = new Date(val).getTime();
+  if (isNaN(ts)) return toast("Ongeldig tijdstip");
+  if (ts > Date.now() + 60000) return toast("Niet in de toekomst loggen 🙃");
+  const logs = loadLogs();
+  logs.push(ts);
+  saveLogs(logs);
+  renderMigraine();
+  prefillManualTime();
+  if (navigator.vibrate) navigator.vibrate(20);
+  toast("Aanval gelogd voor " + new Date(ts).toLocaleString("nl-NL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }));
+  pushMigraine(ts);
+});
+
 /* Migraine modus — dim alles behalve de rode knop */
 function setMigraineMode(on) {
   document.body.classList.toggle("migraine-mode", on);
