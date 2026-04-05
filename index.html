@@ -10,6 +10,9 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="icon.svg" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;0,9..144,900;1,9..144,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <title>Hammerhead HQ — voor Jurriën</title>
 </head>
@@ -95,13 +98,19 @@
 
         <div class="card chart-card">
           <div class="card-head">
-            <h3>Aanvallen per maand</h3>
-            <div class="seg">
-              <button class="seg-btn active" data-range="year">Jaar</button>
-              <button class="seg-btn" data-range="all">Alles</button>
-            </div>
+            <h3>Aanvallenkalender</h3>
+            <span class="muted heatmap-year" id="heatmapYear"></span>
           </div>
-          <canvas id="chart" height="180"></canvas>
+          <div id="heatmap" class="heatmap"></div>
+          <div class="heatmap-legend">
+            <span>Minder</span>
+            <span class="hm-box hm-0"></span>
+            <span class="hm-box hm-1"></span>
+            <span class="hm-box hm-2"></span>
+            <span class="hm-box hm-3"></span>
+            <span class="hm-box hm-4"></span>
+            <span>Meer</span>
+          </div>
         </div>
 
         <div class="card">

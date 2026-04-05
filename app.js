@@ -85,16 +85,29 @@ async function pushQuote(q) {
   } catch (e) { console.warn("push quote failed", e); }
 }
 
-/* ---------- Tab navigation ---------- */
+/* ---------- Tab navigation + mood ---------- */
+const MOODS = {
+  "view-migraine": "mood-migraine",
+  "view-funk": "mood-funk",
+  "view-articles": "mood-articles",
+  "view-ego": "mood-ego",
+};
+function setMood(viewId) {
+  Object.values(MOODS).forEach((m) => document.body.classList.remove(m));
+  if (MOODS[viewId]) document.body.classList.add(MOODS[viewId]);
+}
 $$(".tab").forEach((tab) => {
   tab.addEventListener("click", () => {
     const view = tab.dataset.view;
     $$(".tab").forEach((t) => t.classList.toggle("active", t === tab));
     $$(".view").forEach((v) => v.classList.toggle("active", v.id === view));
-    if (navigator.vibrate) navigator.vibrate(8);
+    setMood(view);
+    if (navigator.vibrate) navigator.vibrate(6);
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 });
+// Default mood on load
+setMood("view-migraine");
 
 /* ---------- Toast ---------- */
 const toastEl = $("#toast");
@@ -232,14 +245,22 @@ $("#clearLogs").addEventListener("click", () => {
   pushDeleteAllMigraines();
 });
 
-let chartRange = "year";
-$$(".seg-btn").forEach((b) =>
-  b.addEventListener("click", () => {
-    $$(".seg-btn").forEach((x) => x.classList.toggle("active", x === b));
-    chartRange = b.dataset.range;
-    renderChart();
-  })
-);
+/* Odometer-style number animation */
+function animateNumber(el, target) {
+  const start = parseInt(el.dataset.val || "0", 10);
+  if (start === target) { el.textContent = target; return; }
+  const duration = 700;
+  const t0 = performance.now();
+  const step = (now) => {
+    const p = Math.min(1, (now - t0) / duration);
+    const eased = 1 - Math.pow(1 - p, 3);
+    const val = Math.round(start + (target - start) * eased);
+    el.textContent = val;
+    if (p < 1) requestAnimationFrame(step);
+    else el.dataset.val = target;
+  };
+  requestAnimationFrame(step);
+}
 
 /* Swipe-to-delete voor migraine-log items */
 const SWIPE_THRESHOLD = 80;
@@ -369,9 +390,9 @@ function renderMigraine() {
   }).length;
   const yearCount = logs.filter((t) => new Date(t).getFullYear() === thisYear).length;
 
-  $("#statMonth").textContent = monthCount;
-  $("#statYear").textContent = yearCount;
-  $("#statTotal").textContent = logs.length;
+  animateNumber($("#statMonth"), monthCount);
+  animateNumber($("#statYear"), yearCount);
+  animateNumber($("#statTotal"), logs.length);
 
   const last = logs[0];
   $("#lastLog").textContent = last
@@ -402,8 +423,49 @@ function renderMigraine() {
     });
   }
 
-  renderChart();
+  renderHeatmap();
   renderInsights(logs);
+}
+
+/* GitHub-style calendar heatmap for the last year */
+function renderHeatmap() {
+  const container = $("#heatmap");
+  if (!container) return;
+  container.innerHTML = "";
+  const logs = loadLogs();
+  const now = new Date();
+  $("#heatmapYear").textContent = now.getFullYear();
+
+  // Bucket logs per day
+  const byDay = {};
+  logs.forEach((t) => {
+    const d = new Date(t);
+    const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    byDay[key] = (byDay[key] || 0) + 1;
+  });
+
+  // Show ~53 weeks ending this week. Start from Monday 52 weeks ago.
+  const end = new Date(now);
+  end.setHours(0, 0, 0, 0);
+  const start = new Date(end);
+  start.setDate(start.getDate() - 52 * 7 - end.getDay());
+
+  const todayKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+  const day = new Date(start);
+  const totalDays = 53 * 7;
+  for (let i = 0; i < totalDays; i++) {
+    const key = `${day.getFullYear()}-${day.getMonth()}-${day.getDate()}`;
+    const count = byDay[key] || 0;
+    const isFuture = day > now;
+    const level = count === 0 ? 0 : count === 1 ? 1 : count === 2 ? 2 : count === 3 ? 3 : 4;
+    const cell = document.createElement("div");
+    cell.className = `hm-cell hm-${level}`;
+    if (isFuture) cell.classList.add("future");
+    if (key === todayKey) cell.classList.add("today");
+    cell.title = `${day.toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })} — ${count} aanval${count === 1 ? "" : "len"}`;
+    container.appendChild(cell);
+    day.setDate(day.getDate() + 1);
+  }
 }
 
 function renderInsights(logs) {
@@ -499,8 +561,8 @@ function formatRelative(ts) {
   return new Date(ts).toLocaleDateString("nl-NL");
 }
 
-/* Custom lightweight bar chart (no dependency) */
-function renderChart() {
+/* Legacy bar chart — replaced by heatmap, kept dead for now */
+function _renderChart_deprecated() {
   const canvas = $("#chart");
   const ctx = canvas.getContext("2d");
   const dpr = window.devicePixelRatio || 1;
@@ -598,7 +660,7 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-window.addEventListener("resize", renderChart);
+window.addEventListener("resize", renderHeatmap);
 
 /* ===================================================================
    2. FUNK TAB
