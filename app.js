@@ -193,9 +193,9 @@ async function syncInstapaperNow() {
   card.classList.add("syncing");
   if (status) status.textContent = "Syncen…";
   haptic("tabSwitch");
-  // Force fresh fetch
+  // Force fresh fetch — clears cache, bypasses proxy cache via cb param
   localStorage.removeItem(INSTAPAPER_CACHE_KEY);
-  const items = await fetchInstapaperFeed();
+  const items = await fetchInstapaperFeed(true);
   card.classList.remove("syncing");
   if (items && items.length > 0) {
     renderArticles();
@@ -245,7 +245,14 @@ function stripHtml(s) {
   return (div.textContent || "").trim().replace(/\s+/g, " ").slice(0, 240);
 }
 
-async function fetchViaProxies(targetUrl) {
+async function fetchViaProxies(targetUrl, bustCache = false) {
+  // Add cache-buster query param so both the proxy and Instapaper's edge
+  // cache treat the URL as unique. Instapaper ignores unknown params.
+  let url = targetUrl;
+  if (bustCache) {
+    const sep = targetUrl.includes("?") ? "&" : "?";
+    url = `${targetUrl}${sep}_cb=${Date.now()}`;
+  }
   const proxies = [
     (u) => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
     (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
@@ -253,7 +260,7 @@ async function fetchViaProxies(targetUrl) {
   ];
   for (const build of proxies) {
     try {
-      const res = await fetch(build(targetUrl), { cache: "no-store" });
+      const res = await fetch(build(url), { cache: "no-store" });
       if (!res.ok) continue;
       const text = await res.text();
       if (text && text.length > 500) return text;
@@ -355,16 +362,16 @@ function parseInstapaperProfile(html) {
   return items;
 }
 
-async function fetchInstapaperFeed() {
+async function fetchInstapaperFeed(force = false) {
   const profileUrl = window.HH_CONFIG && window.HH_CONFIG.INSTAPAPER_URL;
   if (!profileUrl) return null;
 
   const cached = loadInstapaperCache();
   const now = Date.now();
-  if (cached && now - cached.ts < INSTAPAPER_TTL) return cached.items;
+  if (!force && cached && now - cached.ts < INSTAPAPER_TTL) return cached.items;
 
   try {
-    const html = await fetchViaProxies(profileUrl);
+    const html = await fetchViaProxies(profileUrl, force);
     if (!html) throw new Error("all proxies failed");
     const items = parseInstapaperProfile(html);
     if (items.length === 0) throw new Error("no articles parsed");
