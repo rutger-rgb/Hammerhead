@@ -472,10 +472,10 @@ function showSplash() {
     if (navigator.vibrate) navigator.vibrate([60, 40, 20]);
   }, 3200);
 
-  // Remove splash at end of 6.5s animation
+  // Remove splash at end of 8s animation
   setTimeout(() => {
     if (document.getElementById("splash")) splash.remove();
-  }, 6600);
+  }, 8100);
 }
 showSplash();
 

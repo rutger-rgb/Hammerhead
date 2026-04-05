@@ -1031,7 +1031,7 @@ blockquote#blurbText {
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  animation: splashFade 6.5s var(--ease-out-expo) forwards;
+  animation: splashFade 8s var(--ease-out-expo) forwards;
   overflow: hidden;
 }
 /* Vignette edges */
@@ -1060,7 +1060,7 @@ blockquote#blurbText {
     radial-gradient(1px 1px at 70% 80%, white, transparent);
   background-size: 100% 100%;
   opacity: 0;
-  animation: starsIn 1.7s var(--ease-out-expo) 0.3s forwards, starsOut 1.2s var(--ease-smooth) 5.3s forwards;
+  animation: starsIn 1.7s var(--ease-out-expo) 0.3s forwards, starsOut 1.5s var(--ease-smooth) 6.5s forwards;
 }
 @keyframes starsIn { to { opacity: 0.85; } }
 @keyframes starsOut { to { opacity: 0; } }
@@ -1327,7 +1327,7 @@ blockquote#blurbText {
 .splash-skip:hover { background: rgba(255,255,255,0.14); }
 
 @keyframes splashFade {
-  0%, 92% { opacity: 1; pointer-events: auto; }
+  0%, 90% { opacity: 1; pointer-events: auto; }
   100% { opacity: 0; pointer-events: none; visibility: hidden; }
 }
 @keyframes splashText {
