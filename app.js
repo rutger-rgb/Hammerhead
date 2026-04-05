@@ -373,55 +373,37 @@ $("#exitAdmin").addEventListener("click", () => ($("#adminPanel").hidden = true)
 /* ===================================================================
    4. EGO TAB
    =================================================================== */
+/*
+ * BLURBS
+ * ------
+ * Regel: alleen echte, verifieerbare citaten — of anders op naam van
+ * Rutger Bregman (de webmaster). Geen verzonnen juryrapporten of
+ * fictieve krantenrecensies meer. Voeg echte citaten toe aan de
+ * REAL_QUOTES array (met bron + link indien mogelijk).
+ */
+const REAL_QUOTES = [
+  // Voeg hier echte, geverifieerde citaten toe over Jurriën Hamer.
+  // Formaat: { text: "...", source: "Bron, jaar" }
+];
+
+const BREGMAN_BLURBS = [
+  "Jurriën is een van de weinige denkers die ik ken die tegelijk bescheiden én onmiskenbaar briljant is. Een zeldzame combinatie.",
+  "Als ik wil weten wat ik écht ergens van vind, lees ik eerst wat Jurriën erover heeft geschreven. Scheelt mij denkwerk.",
+  "Hammerhead schrijft zoals goede vrienden praten: eerlijk, scherp, en altijd net iets slimmer dan je verwachtte.",
+  "Er zijn filosofen die ingewikkeld doen om slim te lijken. En dan is er Jurriën, die slim is en daarom juist helder schrijft.",
+  "Ik heb zelden iemand ontmoet die zo goed kan nadenken én zo goed kan lachen om zichzelf. Meestal is het één van de twee.",
+  "Hamer doet iets zeldzaams: hij maakt je een beter mens zonder dat het preken wordt.",
+  "Als pech en geluk ooit een officiële woordvoerder krijgen, stem ik op Jurriën.",
+  "Lees één alinea van Jurriën en je merkt het: hier zit iemand die écht heeft nagedacht voordat hij begon te typen.",
+  "De wereld heeft meer mensen nodig zoals Hammerhead. Helaas zijn ze op na deze ene.",
+  "Ik ken weinig mensen bij wie migraine en meesterwerken zo hand in hand gaan. Respect.",
+  "Jurriën bewijst dat filosofie geen ivoren toren hoeft te zijn. Soms is het gewoon een keukentafel met koffie.",
+  "Als ik één boek zou mogen aanraden aan iemand die nog nooit over ethiek heeft nagedacht: dat van Hamer. Geen twijfel.",
+];
+
 const BLURBS = [
-  {
-    text: "Jurriën Hamer schrijft met de lichtheid van een veer en de diepgang van een put waar je per ongeluk je sleutels in laat vallen.",
-    source: "De Volkskrant (vrij naar)",
-  },
-  {
-    text: "Zelden zo'n goed onderbouwd pleidooi gelezen waarom jij persoonlijk gelijk hebt over zo ongeveer alles.",
-    source: "Juryrapport (interne notitie)",
-  },
-  {
-    text: "Als Kant en Seinfeld een kind kregen, en dat kind ging filosoferen over pech en geluk — dat is Hamer.",
-    source: "Filosofie Magazine (gedroomde editie)",
-  },
-  {
-    text: "Een denker die erin slaagt om bij elke alinea minstens één lezer hardop 'verdomme ja' te laten zeggen.",
-    source: "NRC (of in ieder geval hun hart)",
-  },
-  {
-    text: "De Socrates Wisselbeker is eigenlijk te klein voor wat hier gepresteerd is. Volgend jaar een grotere beker.",
-    source: "Socrates Jury, fictief citaat",
-  },
-  {
-    text: "Hammerhead: het enige haaiensoort dat zowel filosofie kan bedrijven als spontaan kan gaan dansen in de keuken.",
-    source: "Wikipedia (als het eerlijk was)",
-  },
-  {
-    text: "Er zijn mensen die nadenken. Er zijn mensen die schrijven. En dan is er Jurriën Hamer, die beide tegelijk doet zonder zichtbare inspanning.",
-    source: "De Correspondent (spiritueel)",
-  },
-  {
-    text: "Ik las één hoofdstuk en besloot direct al mijn overtuigingen te heroverwegen. En toen een koekje te pakken.",
-    source: "Anonieme lezer, waarschijnlijk jij",
-  },
-  {
-    text: "Als migraine een tegenstander is, dan is Jurriën de denker die 'm in een debat intellectueel de hoek in jaagt.",
-    source: "Deze app, letterlijk nu",
-  },
-  {
-    text: "Hamer bewijst dat je tegelijk bescheiden én onmiskenbaar briljant kunt zijn. Een combinatie die in het wild zelden voorkomt.",
-    source: "Hammerhead HQ Research Division",
-  },
-  {
-    text: "Zijn proza leest als een warme espresso op een koude maandagochtend: wakker, scherp, en net iets te goed om te delen.",
-    source: "Koffiekenner & liefhebber",
-  },
-  {
-    text: "Weinig schrijvers slagen erin om zowel Schopenhauer als een gemiddelde WhatsApp-groep toegankelijk te citeren. Hamer wel.",
-    source: "Filosofiecafé De Gedachte",
-  },
+  ...REAL_QUOTES,
+  ...BREGMAN_BLURBS.map((text) => ({ text, source: "Rutger Bregman" })),
 ];
 
 let blurbIdx = -1;
