@@ -484,21 +484,21 @@ window.addEventListener("resize", renderChart);
    2. FUNK TAB
    =================================================================== */
 const FUNK_TRACKS = [
-  { title: "Superstition", artist: "Stevie Wonder", id: "1h2xVEoJORqrg71HocgqXd" },
-  { title: "Get Lucky", artist: "Daft Punk", id: "2Foc5Q5nqNiosCNqttzHof" },
-  { title: "September", artist: "Earth, Wind & Fire", id: "2grjqo0Frpf2okIBiifQKs" },
+  { title: "Superstition", artist: "Stevie Wonder", id: "21mhCdZVZnjiTiI8GMXoj2" },
+  { title: "Get Lucky", artist: "Daft Punk ft. Pharrell Williams", id: "69kOkLUCkxIZYexIgSG8rq" },
+  { title: "September", artist: "Earth, Wind & Fire", id: "7Cuk8jsPPoNYQWXK9XRFvG" },
   { title: "Uptown Funk", artist: "Mark Ronson ft. Bruno Mars", id: "32OlwWuMpZ6b0aN2RZOeMS" },
-  { title: "Give Up the Funk", artist: "Parliament", id: "4wHYjYpsYDjEWqvYb4Hl0Q" },
-  { title: "Good Times", artist: "Chic", id: "2tpWsVSb9UEmDRxAl1zhX1" },
-  { title: "Le Freak", artist: "Chic", id: "5eRZS7dc1vjWwqvdvno7zM" },
-  { title: "Brick House", artist: "Commodores", id: "1K35Fsd5ZMYHuUu7AzOlnD" },
-  { title: "Play That Funky Music", artist: "Wild Cherry", id: "4YnzcVzQl37ZIhDCMRBtwG" },
-  { title: "Kiss", artist: "Prince", id: "2TjdnqlpwOjhijHCwHCP2d" },
-  { title: "I Want You Back", artist: "The Jackson 5", id: "2i0ftu8wxBu3Po74Q65yZC" },
-  { title: "Flash Light", artist: "Parliament", id: "2gMXnyrvIjhVBUZwvLZDMP" },
-  { title: "Jungle Boogie", artist: "Kool & The Gang", id: "6XoRuHJvNUmkPqZI0NEUxu" },
-  { title: "Funky Town", artist: "Lipps Inc.", id: "7EqpEBPOohgk7NnKvBGFWo" },
-  { title: "Blurred Lines", artist: "Robin Thicke", id: "0n4bITAu0Y0nigrz3MFJMb" },
+  { title: "Give Up the Funk", artist: "Parliament", id: "70LrFtZtqUjVmhCySZllO9" },
+  { title: "Good Times", artist: "CHIC", id: "0G3fbPbE1vGeABDEZF0jeG" },
+  { title: "Le Freak", artist: "CHIC", id: "1I5EQtSoyraCQUbv2oC3Cl" },
+  { title: "Brick House", artist: "Commodores", id: "5VJjhHyG8NZ5xdgG6uTb3P" },
+  { title: "Play That Funky Music", artist: "Wild Cherry", id: "5uuJruktM9fMdN9Va0DUMl" },
+  { title: "Kiss", artist: "Prince", id: "62LJFaYihsdVrrkgUOJC05" },
+  { title: "I Want You Back", artist: "The Jackson 5", id: "5LxvwujISqiB8vpRYv887S" },
+  { title: "Flash Light", artist: "Parliament", id: "1v1PV2wERHiMPesMWX0qmO" },
+  { title: "Jungle Boogie", artist: "Kool & The Gang", id: "3K0SJUQNbOkUprTFcwwAKN" },
+  { title: "Funkytown", artist: "Lipps Inc.", id: "0KQh7AuuZvpTKWhcJa8Pbr" },
+  { title: "Super Freak", artist: "Rick James", id: "2dCmGcEOQrMQhMMS8Vj7Ca" },
 ];
 
 const vinyl = $("#vinyl");
