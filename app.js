@@ -330,9 +330,30 @@ notifBtn.addEventListener("click", async () => {
 });
 updateNotifUi();
 
-/* Admin mode — tap brand 5x to open */
+/* Logo = hard refresh button */
+$("#logoBtn").addEventListener("click", async () => {
+  const logo = $("#logoBtn");
+  logo.classList.add("spinning");
+  if (navigator.vibrate) navigator.vibrate(15);
+  toast("Hard refresh 🦈");
+  // Clear caches if any service worker has cached stuff
+  try {
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+    }
+  } catch (e) {}
+  // Force reload bypassing cache via query param
+  setTimeout(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("_t", Date.now());
+    window.location.replace(url.toString());
+  }, 350);
+});
+
+/* Admin mode — tap brand title 5x to open */
 let brandTaps = 0, brandTimer;
-$(".brand").addEventListener("click", () => {
+$(".brand-text").addEventListener("click", () => {
   brandTaps++;
   clearTimeout(brandTimer);
   brandTimer = setTimeout(() => (brandTaps = 0), 2000);
