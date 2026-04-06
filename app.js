@@ -57,16 +57,18 @@ async function migrateClearSeededArticles() {
 
 async function pullAll() {
   if (!supa) return;
+  // Pull each table independently — if one fails (e.g. table doesn't exist)
+  // the others still succeed. No single failure blocks the whole sync.
   try {
-    const [mig, art, quo] = await Promise.all([
-      supa.from("migraines").select("id, ts").order("ts", { ascending: false }),
-      supa.from("articles").select("id, title, url, description, created_at").order("created_at", { ascending: false }),
-      supa.from("quotes").select("id, text, source, created_at").order("created_at", { ascending: false }),
-    ]);
+    const mig = await supa.from("migraines").select("id, ts").order("ts", { ascending: false });
     if (!mig.error && mig.data) {
       const timestamps = mig.data.map((r) => new Date(r.ts).getTime());
       localStorage.setItem(LOG_KEY, JSON.stringify(timestamps));
     }
+  } catch (e) { console.warn("pull migraines failed", e); }
+
+  try {
+    const art = await supa.from("articles").select("id, title, url, description, created_at").order("created_at", { ascending: false });
     if (!art.error && art.data) {
       const arts = art.data.map((r) => ({
         id: r.id,
@@ -77,13 +79,15 @@ async function pullAll() {
       }));
       localStorage.setItem(ART_KEY, JSON.stringify(arts));
     }
+  } catch (e) { console.warn("pull articles failed", e); }
+
+  try {
+    const quo = await supa.from("quotes").select("id, text, source, created_at").order("created_at", { ascending: false });
     if (!quo.error && quo.data) {
       const quotes = quo.data.map((r) => ({ text: r.text, source: r.source }));
       localStorage.setItem(CUSTOM_QUOTES_KEY, JSON.stringify(quotes));
     }
-  } catch (e) {
-    console.warn("Supabase pull failed, using local cache", e);
-  }
+  } catch (e) { console.warn("pull quotes failed", e); }
 }
 
 async function pushMigraine(ts) {
@@ -1976,26 +1980,21 @@ async function init() {
   applyTimeGreeting();
   if (SYNC_ENABLED) {
     setSyncStatus("⏳ syncen…");
-    try {
-      await migrateClearSeededArticles();
-      await pullAll();
-      BLURBS = buildBlurbs();
-      const _card = document.getElementById("blurbCard");
-      if (_card) _card.style.minHeight = "0";
-      renderMigraine();
-      renderArticles();
-      nextBlurb();
-      setTimeout(lockBlurbCardHeight, 400);
-      setSyncStatus("☁️");
-      setSyncDot("connected");
-      subscribeArticleInserts(swReg);
-      setTimeout(() => island("☁️ Gesynct met Supabase", 3000), 300);
-    } catch (e) {
-      console.warn("Sync failed", e);
-      setSyncStatus("⚠️ sync mislukt");
-      setSyncDot("error");
-      toast("Supabase sync mislukt — lokale data wordt getoond");
-    }
+    // Migration is best-effort (may fail if tables don't exist yet)
+    try { await migrateClearSeededArticles(); } catch (e) { console.warn("migration skipped", e); }
+    // Pull is now per-table resilient — won't throw
+    await pullAll();
+    BLURBS = buildBlurbs();
+    const _card = document.getElementById("blurbCard");
+    if (_card) _card.style.minHeight = "0";
+    renderMigraine();
+    renderArticles();
+    nextBlurb();
+    setTimeout(lockBlurbCardHeight, 400);
+    setSyncStatus("☁️");
+    setSyncDot("connected");
+    subscribeArticleInserts(swReg);
+    setTimeout(() => island("☁️ Gesynct met Supabase", 3000), 300);
   }
 
   // Kick off Instapaper feed sync (non-blocking)
