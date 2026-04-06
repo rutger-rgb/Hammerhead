@@ -2059,6 +2059,8 @@ body.migraine-mode #exitMigraineMode { display: flex; align-items: center; justi
     bottom: 0;
     right: auto;
     width: 220px;
+    max-width: none;
+    transform: none;
     flex-direction: column;
     justify-content: flex-start;
     align-items: stretch;
@@ -2102,6 +2104,7 @@ body.migraine-mode #exitMigraineMode { display: flex; align-items: center; justi
   /* Main content shifts right of sidebar */
   #app {
     max-width: none;
+    margin: 0;
     margin-left: 220px;
     padding-bottom: 48px;
   }
