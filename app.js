@@ -168,11 +168,15 @@ function replayHeroReveal(viewId) {
       ch.after(cursor);
     }, i * 65);
   });
-  // Remove cursor + cleanup after typing done
+  // Remove cursor after typing done (extra blink at end)
+  const totalTime = chars.length * 65;
   setTimeout(() => {
-    cursor.remove();
-    h1.classList.remove("typewriting");
-  }, chars.length * 65 + 500);
+    // Pause cursor briefly at end (one extra blink cycle)
+    setTimeout(() => {
+      cursor.remove();
+      h1.classList.remove("typewriting");
+    }, 600);
+  }, totalTime);
 }
 
 const TAB_ORDER = ["view-migraine", "view-funk", "view-articles", "view-ego"];
@@ -472,8 +476,8 @@ if (shortcut === "funk") {
   setTimeout(() => $("#funkBtn")?.click(), 800);
 }
 
-// Typewriter on initial page load
-setTimeout(() => replayHeroReveal(startView), 300);
+// Typewriter on initial page load (delay to clear splash/onboarding)
+setTimeout(() => replayHeroReveal(startView), 500);
 
 /* PWA install prompt (Chrome Android) — capture event so we can
  * trigger it later from a custom button if desired */
