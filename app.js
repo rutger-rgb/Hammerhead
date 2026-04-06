@@ -1680,20 +1680,25 @@ $("#logoBtn").addEventListener("click", async () => {
   const logo = $("#logoBtn");
   logo.classList.add("spinning");
   if (navigator.vibrate) navigator.vibrate(15);
-  toast("Hard refresh 🦈");
-  // Clear caches if any service worker has cached stuff
+  toast("Hard refresh…");
   try {
+    // 1. Unregister service worker so it stops serving cached files
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+    }
+    // 2. Clear all Cache API caches
     if ("caches" in window) {
       const keys = await caches.keys();
       await Promise.all(keys.map((k) => caches.delete(k)));
     }
   } catch (e) {}
-  // Force reload bypassing cache via query param
+  // 3. Force reload: strip old params, add fresh cache-buster
   setTimeout(() => {
     const url = new URL(window.location.href);
-    url.searchParams.set("_t", Date.now());
+    url.search = "?_t=" + Date.now();
     window.location.replace(url.toString());
-  }, 350);
+  }, 300);
 });
 
 /* Admin mode — tap brand title 5x to open */
