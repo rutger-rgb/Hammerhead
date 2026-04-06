@@ -148,36 +148,44 @@ function splitHeroText(h1) {
 document.querySelectorAll(".hero h1").forEach(splitHeroText);
 
 const typedTabs = new Set();
+let typewriterTimers = [];
+
 function replayHeroReveal(viewId) {
   if (typedTabs.has(viewId)) return;
   typedTabs.add(viewId);
+
+  // Cancel any running typewriter
+  typewriterTimers.forEach(clearTimeout);
+  typewriterTimers = [];
+
   const h1 = document.querySelector(`#${viewId} .hero h1`);
   if (!h1) return;
   const chars = h1.querySelectorAll(".ch");
   if (!chars.length) return;
-  // Remove any existing cursor
+
+  // Clean slate
   h1.querySelectorAll(".type-cursor").forEach((c) => c.remove());
-  // Reset: hide all chars
   h1.classList.add("typewriting");
   chars.forEach((ch) => ch.classList.remove("typed"));
-  // Create cursor element
+
+  // Cursor
   const cursor = document.createElement("span");
   cursor.className = "type-cursor";
-  // Insert cursor at beginning
   if (chars[0]) chars[0].before(cursor);
-  // Type them in one by one, move cursor after each
+
+  // Type one by one
   chars.forEach((ch, i) => {
-    setTimeout(() => {
+    typewriterTimers.push(setTimeout(() => {
       ch.classList.add("typed");
       ch.after(cursor);
-    }, i * 65);
+    }, i * 65));
   });
-  // Remove cursor immediately after last char is typed
-  const totalTime = chars.length * 65;
-  setTimeout(() => {
+
+  // Cleanup
+  typewriterTimers.push(setTimeout(() => {
     cursor.remove();
     h1.classList.remove("typewriting");
-  }, totalTime + 200);
+  }, chars.length * 65 + 200));
 }
 
 const TAB_ORDER = ["view-migraine", "view-funk", "view-articles", "view-ego"];
