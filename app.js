@@ -175,39 +175,6 @@ function switchToTab(viewId) {
 $$(".tab").forEach((tab) => {
   tab.addEventListener("click", () => switchToTab(tab.dataset.view));
 });
-
-/* Swipe left/right to switch tabs */
-let swipeTabStartX = 0;
-let swipeTabStartY = 0;
-let swipeTabActive = false;
-
-const viewsEl = document.getElementById("views");
-if (viewsEl) {
-  viewsEl.addEventListener("touchstart", (e) => {
-    // Don't trigger tab swipe inside horizontally scrollable elements
-    if (e.target.closest(".heatmap, .log-list, .spotify-embed, iframe")) {
-      swipeTabActive = false;
-      return;
-    }
-    swipeTabStartX = e.touches[0].clientX;
-    swipeTabStartY = e.touches[0].clientY;
-    swipeTabActive = true;
-  }, { passive: true });
-
-  viewsEl.addEventListener("touchend", (e) => {
-    if (!swipeTabActive) return;
-    swipeTabActive = false;
-    const dx = e.changedTouches[0].clientX - swipeTabStartX;
-    const dy = e.changedTouches[0].clientY - swipeTabStartY;
-    // Only trigger if mostly horizontal and long enough
-    if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx) * 0.7) return;
-    if (dx < 0 && currentTabIdx < TAB_ORDER.length - 1) {
-      switchToTab(TAB_ORDER[currentTabIdx + 1]);
-    } else if (dx > 0 && currentTabIdx > 0) {
-      switchToTab(TAB_ORDER[currentTabIdx - 1]);
-    }
-  }, { passive: true });
-}
 /* ===================================================================
    PULL-TO-REFRESH (custom, all tabs)
    =================================================================== */
