@@ -228,14 +228,13 @@ main { padding: 0 16px; }
 .hero h1.typewriting .ch.typed {
   visibility: visible;
 }
-/* Blinking cursor at the end of typed text */
-.hero h1.typewriting::after {
-  content: "";
+/* Blinking cursor that moves with typed text */
+.type-cursor {
   display: inline-block;
   width: 3px;
-  height: 0.85em;
+  height: 0.8em;
   background: var(--accent);
-  margin-left: 2px;
+  margin-left: 1px;
   vertical-align: baseline;
   animation: cursorBlink 0.6s step-end infinite;
 }

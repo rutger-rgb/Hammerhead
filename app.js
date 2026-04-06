@@ -151,15 +151,28 @@ function replayHeroReveal(viewId) {
   if (!h1) return;
   const chars = h1.querySelectorAll(".ch");
   if (!chars.length) return;
+  // Remove any existing cursor
+  h1.querySelectorAll(".type-cursor").forEach((c) => c.remove());
   // Reset: hide all chars
   h1.classList.add("typewriting");
   chars.forEach((ch) => ch.classList.remove("typed"));
-  // Type them in one by one (65ms per char for visible effect)
+  // Create cursor element
+  const cursor = document.createElement("span");
+  cursor.className = "type-cursor";
+  // Insert cursor at beginning
+  if (chars[0]) chars[0].before(cursor);
+  // Type them in one by one, move cursor after each
   chars.forEach((ch, i) => {
-    setTimeout(() => ch.classList.add("typed"), i * 65);
+    setTimeout(() => {
+      ch.classList.add("typed");
+      ch.after(cursor);
+    }, i * 65);
   });
-  // Remove cursor after typing done
-  setTimeout(() => h1.classList.remove("typewriting"), chars.length * 65 + 400);
+  // Remove cursor + cleanup after typing done
+  setTimeout(() => {
+    cursor.remove();
+    h1.classList.remove("typewriting");
+  }, chars.length * 65 + 500);
 }
 
 const TAB_ORDER = ["view-migraine", "view-funk", "view-articles", "view-ego"];
