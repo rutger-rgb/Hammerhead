@@ -393,11 +393,46 @@ async function fetchInstapaperFeed(force = false) {
     const items = parseInstapaperProfile(html);
     if (items.length === 0) throw new Error("no articles parsed");
     localStorage.setItem(INSTAPAPER_CACHE_KEY, JSON.stringify({ ts: now, items }));
+
+    // Push NEW items to Supabase so realtime notifications fire for Jurriën
+    if (supa) {
+      pushNewInstapaperToSupabase(items).catch((e) => console.warn("push instapaper→supabase failed", e));
+    }
+
     return items;
   } catch (e) {
     console.warn("Instapaper scrape failed", e);
     if (cached) return cached.items;
     return null;
+  }
+}
+
+/* Compare scraped Instapaper items against Supabase articles table.
+ * Any item whose URL isn't already in the table gets inserted, which
+ * triggers the realtime subscription → notification on Jurriën's device. */
+async function pushNewInstapaperToSupabase(items) {
+  if (!supa || !items || !items.length) return;
+  try {
+    // Get all existing article URLs from Supabase
+    const { data: existing, error } = await supa.from("articles").select("url");
+    if (error) return;
+    const knownUrls = new Set((existing || []).map((a) => a.url));
+
+    let newCount = 0;
+    for (const item of items) {
+      if (knownUrls.has(item.url)) continue;
+      await supa.from("articles").insert({
+        title: item.title,
+        url: item.url,
+        description: item.desc || null,
+      });
+      newCount++;
+    }
+    if (newCount > 0) {
+      console.log(`Pushed ${newCount} new Instapaper items to Supabase`);
+    }
+  } catch (e) {
+    console.warn("pushNewInstapaperToSupabase failed", e);
   }
 }
 
