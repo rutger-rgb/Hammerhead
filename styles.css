@@ -140,13 +140,14 @@ body::before {
 
 /* Top bar */
 .topbar {
-  padding: calc(var(--safe-top) + 16px) 22px 8px;
+  padding: calc(var(--safe-top) + 16px) 22px 12px;
   position: sticky;
   top: 0;
   z-index: 10;
   background: linear-gradient(180deg, rgba(10,10,15,0.95) 60%, rgba(10,10,15,0));
   backdrop-filter: blur(18px) saturate(140%);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 .brand { display: flex; align-items: center; gap: 16px; }
 .logo {
