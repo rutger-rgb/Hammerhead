@@ -171,14 +171,13 @@ function replayHeroReveal(viewId) {
       ch.after(cursor);
     }, i * 65);
   });
-  // Remove cursor after typing done (extra blink at end)
+  // Cursor stays blinking at end for 2 full blink cycles before vanishing
   const totalTime = chars.length * 65;
   setTimeout(() => {
-    // Pause cursor briefly at end (one extra blink cycle)
     setTimeout(() => {
       cursor.remove();
       h1.classList.remove("typewriting");
-    }, 600);
+    }, 1200);
   }, totalTime);
 }
 
@@ -479,8 +478,13 @@ if (shortcut === "funk") {
   setTimeout(() => $("#funkBtn")?.click(), 800);
 }
 
-// Typewriter on initial page load (delay to clear splash/onboarding)
-setTimeout(() => replayHeroReveal(startView), 500);
+// Typewriter on initial page load — wait for splash/onboarding to clear
+const splashEl = document.getElementById("splash");
+const onboardEl = document.getElementById("onboarding");
+const typewriterDelay = (splashEl && !splashEl.hidden) ? 8500
+  : (onboardEl && !onboardEl.hidden) ? 3000
+  : 400;
+setTimeout(() => replayHeroReveal(startView), typewriterDelay);
 
 /* PWA install prompt (Chrome Android) — capture event so we can
  * trigger it later from a custom button if desired */
