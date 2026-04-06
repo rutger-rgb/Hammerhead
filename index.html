@@ -144,57 +144,13 @@
           </div>
         </div>
 
-        <div class="card ring-card">
-          <div class="ring-wrap">
-            <svg class="activity-ring" viewBox="0 0 200 200">
-              <defs>
-                <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#ffd166"/>
-                  <stop offset="50%" stop-color="#ff8f40"/>
-                  <stop offset="100%" stop-color="#30d158"/>
-                </linearGradient>
-              </defs>
-              <circle class="ring-track" cx="100" cy="100" r="82" />
-              <circle class="ring-fill" id="ringFill" cx="100" cy="100" r="82" />
-            </svg>
-            <div class="ring-center">
-              <div class="ring-num" id="ringNum">—</div>
-              <div class="ring-sub" id="ringSub">van 0 dagen</div>
-            </div>
-          </div>
-          <div class="ring-caption" id="ringCaption">Pijnvrije dagen deze maand</div>
-        </div>
-
-        <div class="card insights-card">
-          <div class="card-head">
-            <h3>Inzichten</h3>
-            <button id="migraineMode" class="icon-btn" aria-label="Migraine modus" title="Migraine modus">🌑</button>
-          </div>
-          <div class="insights-grid">
-            <div class="insight">
-              <div class="insight-num" id="streakCurrent">—</div>
-              <div class="insight-label">dagen pijnvrij</div>
-            </div>
-            <div class="insight">
-              <div class="insight-num" id="streakLongest">—</div>
-              <div class="insight-label">langste streak</div>
-            </div>
-            <div class="insight">
-              <div class="insight-num" id="avgMonth">—</div>
-              <div class="insight-label">gem. per maand</div>
-            </div>
-            <div class="insight">
-              <div class="insight-num" id="trendYoY">—</div>
-              <div class="insight-label">t.o.v. vorig jaar</div>
-            </div>
-          </div>
-          <div id="insightBlurb" class="insight-blurb"></div>
-        </div>
-
         <div class="card chart-card">
           <div class="card-head">
             <h3>Aanvallenkalender</h3>
-            <span class="muted heatmap-year" id="heatmapYear"></span>
+            <div class="card-head-actions">
+              <span class="muted heatmap-year" id="heatmapYear"></span>
+              <button id="migraineMode" class="icon-btn" aria-label="Migraine modus" title="Migraine modus">🌑</button>
+            </div>
           </div>
           <div id="heatmap" class="heatmap"></div>
           <div class="heatmap-legend">

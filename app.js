@@ -184,6 +184,11 @@ let swipeTabActive = false;
 const viewsEl = document.getElementById("views");
 if (viewsEl) {
   viewsEl.addEventListener("touchstart", (e) => {
+    // Don't trigger tab swipe inside horizontally scrollable elements
+    if (e.target.closest(".heatmap, .log-list, .spotify-embed, iframe")) {
+      swipeTabActive = false;
+      return;
+    }
     swipeTabStartX = e.touches[0].clientX;
     swipeTabStartY = e.touches[0].clientY;
     swipeTabActive = true;
@@ -197,10 +202,8 @@ if (viewsEl) {
     // Only trigger if mostly horizontal and long enough
     if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx) * 0.7) return;
     if (dx < 0 && currentTabIdx < TAB_ORDER.length - 1) {
-      // Swipe left → next tab
       switchToTab(TAB_ORDER[currentTabIdx + 1]);
     } else if (dx > 0 && currentTabIdx > 0) {
-      // Swipe right → previous tab
       switchToTab(TAB_ORDER[currentTabIdx - 1]);
     }
   }, { passive: true });
@@ -1212,8 +1215,6 @@ function renderMigraine() {
   }
 
   renderHeatmap();
-  renderActivityRing(logs);
-  renderInsights(logs);
   updatePanicHeartbeat(logs);
 }
 
@@ -1314,6 +1315,11 @@ function renderHeatmap() {
     container.appendChild(cell);
     day.setDate(day.getDate() + 1);
   }
+
+  // Auto-scroll to today (rightmost)
+  requestAnimationFrame(() => {
+    container.scrollLeft = container.scrollWidth;
+  });
 }
 
 function renderInsights(logs) {
