@@ -139,10 +139,11 @@ function splitHeroText(h1) {
     const span = document.createElement("span");
     span.className = "ch" + (c === " " ? " space" : "");
     span.textContent = c;
-    span.style.animationDelay = (i * 0.035) + "s";
     h1.appendChild(span);
   });
   h1.dataset.split = "1";
+  // Start hidden — typewriter will reveal
+  h1.classList.add("typewriting");
 }
 document.querySelectorAll(".hero h1").forEach(splitHeroText);
 
