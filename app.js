@@ -459,6 +459,9 @@ if (shortcut === "funk") {
   setTimeout(() => $("#funkBtn")?.click(), 800);
 }
 
+// Typewriter on initial page load
+setTimeout(() => replayHeroReveal(startView), 300);
+
 /* PWA install prompt (Chrome Android) — capture event so we can
  * trigger it later from a custom button if desired */
 let deferredInstallPrompt = null;
