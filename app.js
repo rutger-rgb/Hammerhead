@@ -171,14 +171,12 @@ function replayHeroReveal(viewId) {
       ch.after(cursor);
     }, i * 65);
   });
-  // Cursor stays blinking at end for 2 full blink cycles before vanishing
+  // Remove cursor immediately after last char is typed
   const totalTime = chars.length * 65;
   setTimeout(() => {
-    setTimeout(() => {
-      cursor.remove();
-      h1.classList.remove("typewriting");
-    }, 1200);
-  }, totalTime);
+    cursor.remove();
+    h1.classList.remove("typewriting");
+  }, totalTime + 200);
 }
 
 const TAB_ORDER = ["view-migraine", "view-funk", "view-articles", "view-ego"];
@@ -478,13 +476,7 @@ if (shortcut === "funk") {
   setTimeout(() => $("#funkBtn")?.click(), 800);
 }
 
-// Typewriter on initial page load — wait for splash/onboarding to clear
-const splashEl = document.getElementById("splash");
-const onboardEl = document.getElementById("onboarding");
-const typewriterDelay = (splashEl && !splashEl.hidden) ? 8500
-  : (onboardEl && !onboardEl.hidden) ? 3000
-  : 400;
-setTimeout(() => replayHeroReveal(startView), typewriterDelay);
+// Initial typewriter is triggered from init() after everything loads
 
 /* PWA install prompt (Chrome Android) — capture event so we can
  * trigger it later from a custom button if desired */
@@ -2041,4 +2033,7 @@ async function init() {
     toast("Instapaper sync mislukt");
   });
 }
-init();
+init().then(() => {
+  // Typewriter for the initial view — fires after all init work is done
+  setTimeout(() => replayHeroReveal(startView), 300);
+});
