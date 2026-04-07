@@ -149,22 +149,35 @@ document.querySelectorAll(".hero h1").forEach(splitHeroText);
 
 const typedTabs = new Set();
 let typewriterTimers = [];
+let typewriterTarget = null; // which h1 is currently being typed
+
+function finishTypewriterImmediately() {
+  typewriterTimers.forEach(clearTimeout);
+  typewriterTimers = [];
+  if (typewriterTarget) {
+    const h1 = typewriterTarget;
+    h1.querySelectorAll(".ch").forEach((ch) => ch.classList.add("typed"));
+    h1.querySelectorAll(".type-cursor").forEach((c) => c.remove());
+    h1.classList.remove("typewriting");
+    typewriterTarget = null;
+  }
+}
 
 function replayHeroReveal(viewId) {
   if (typedTabs.has(viewId)) return;
   typedTabs.add(viewId);
 
-  // Cancel any running typewriter
-  typewriterTimers.forEach(clearTimeout);
-  typewriterTimers = [];
+  // Finish any in-progress typewriter immediately
+  finishTypewriterImmediately();
 
   const h1 = document.querySelector(`#${viewId} .hero h1`);
   if (!h1) return;
   const chars = h1.querySelectorAll(".ch");
   if (!chars.length) return;
 
+  typewriterTarget = h1;
+
   // Clean slate
-  h1.querySelectorAll(".type-cursor").forEach((c) => c.remove());
   h1.classList.add("typewriting");
   chars.forEach((ch) => ch.classList.remove("typed"));
 
@@ -185,6 +198,7 @@ function replayHeroReveal(viewId) {
   typewriterTimers.push(setTimeout(() => {
     cursor.remove();
     h1.classList.remove("typewriting");
+    typewriterTarget = null;
   }, chars.length * 65 + 200));
 }
 

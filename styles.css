@@ -1895,13 +1895,17 @@ blockquote#blurbText {
    ============================================================ */
 /* ============================================================
    GOODNIGHT MODE — auto-dims after 22:00, warmer tones
+   Uses an overlay instead of body filter to avoid breaking
+   position:fixed on tabbar, topbar, splash, onboarding.
    ============================================================ */
-body.goodnight-mode {
-  filter: brightness(0.82) saturate(0.85) sepia(0.08);
-  transition: filter 2s var(--ease-smooth);
-}
-body.goodnight-mode .panic {
-  filter: brightness(0.85);
+body.goodnight-mode::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 10, 0, 0.18);
+  pointer-events: none;
+  z-index: 999;
+  mix-blend-mode: multiply;
 }
 
 /* ============================================================
