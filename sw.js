@@ -2,10 +2,11 @@
  * Handles: offline caching (cache-first for static assets, network-first
  * for API/CDN), and notification click routing. */
 
-const CACHE_NAME = "hh-cache-v1";
+const CACHE_NAME = "hh-cache-v2";
 const STATIC_ASSETS = [
   "./",
   "./index.html",
+  "./app.html",
   "./styles.css",
   "./app.js",
   "./config.js",
@@ -81,7 +82,7 @@ self.addEventListener("notificationclick", (event) => {
         }
       }
       if (self.clients.openWindow) {
-        return self.clients.openWindow("./#articles");
+        return self.clients.openWindow("./app.html#articles");
       }
     })()
   );

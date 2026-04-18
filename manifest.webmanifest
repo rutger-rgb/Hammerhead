@@ -2,7 +2,7 @@
   "name": "Hammerhead HQ",
   "short_name": "Hammerhead",
   "description": "De officiële Jurriën Hamer companion app",
-  "start_url": ".",
+  "start_url": "app.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0a0a0f",
@@ -19,28 +19,28 @@
       "name": "Log migraine aanval",
       "short_name": "Log aanval",
       "description": "Direct naar de paniekknop",
-      "url": "./?shortcut=log",
+      "url": "app.html?shortcut=log",
       "icons": [{ "src": "icon.svg", "sizes": "any" }]
     },
     {
       "name": "Random funk",
       "short_name": "Funk",
       "description": "Willekeurig groovy nummer",
-      "url": "./?shortcut=funk",
+      "url": "app.html?shortcut=funk",
       "icons": [{ "src": "icon.svg", "sizes": "any" }]
     },
     {
       "name": "Ego oplader",
       "short_name": "Ego",
       "description": "Een dosis zelfvertrouwen",
-      "url": "./?shortcut=ego",
+      "url": "app.html?shortcut=ego",
       "icons": [{ "src": "icon.svg", "sizes": "any" }]
     },
     {
       "name": "Nieuwste artikel",
       "short_name": "Artikel",
       "description": "Leesvoer van de webmaster",
-      "url": "./?shortcut=articles",
+      "url": "app.html?shortcut=articles",
       "icons": [{ "src": "icon.svg", "sizes": "any" }]
     }
   ]
