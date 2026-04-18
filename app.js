@@ -578,41 +578,37 @@ function haptic(name) {
 }
 
 /* ===================================================================
-   SPLASH SCREEN — first load per session
+   SPLASH SCREEN — Hammer-Orakel 3D opening (first load per session)
    =================================================================== */
 function dismissSplash() {
-  const splash = document.getElementById("splash");
+  const splash = document.getElementById("orakel-splash");
   if (!splash) return;
-  splash.style.transition = "opacity .4s";
-  splash.style.opacity = "0";
-  splash.style.pointerEvents = "none";
-  setTimeout(() => splash.remove(), 400);
+  splash.classList.add("dismissed");
+  document.body.classList.remove("orakel-active");
+  // Onboarding should not show after the cinematic opening
+  try { localStorage.setItem("hh_onboarded", "1"); } catch (e) {}
+  setTimeout(() => splash.remove(), 750);
 }
 window.dismissSplash = dismissSplash;
-
-const SPLASH_SUBTAGLINE = "De officiële Jurriën Hamer companion app";
+window.dismissOrakelSplash = dismissSplash;
 
 function showSplash() {
-  if (sessionStorage.getItem("hh_splash_seen")) return;
-  const splash = document.getElementById("splash");
+  const splash = document.getElementById("orakel-splash");
   if (!splash) return;
+
+  // Already seen this session OR installed PWA (standalone) → skip opening
+  const standalone =
+    (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
+    window.navigator.standalone === true;
+  const replay = new URLSearchParams(location.search).has("replay");
+  if (!replay && (sessionStorage.getItem("hh_splash_seen") || standalone)) {
+    splash.remove();
+    return;
+  }
+
   splash.hidden = false;
+  document.body.classList.add("orakel-active");
   sessionStorage.setItem("hh_splash_seen", "1");
-
-  // Always show the companion app subtitle
-  const sub = document.getElementById("splashSubTagline");
-  if (sub) sub.textContent = SPLASH_SUBTAGLINE;
-
-  // Thunk sound + haptic at exact impact moment (3.2s)
-  setTimeout(() => {
-    try { thunk(); } catch (e) {}
-    if (navigator.vibrate) navigator.vibrate([60, 40, 20]);
-  }, 3200);
-
-  // Remove splash at end of 8s animation
-  setTimeout(() => {
-    if (document.getElementById("splash")) splash.remove();
-  }, 8100);
 }
 showSplash();
 
@@ -621,12 +617,6 @@ showSplash();
    — splash skip, onboarding next/skip all need capture to beat other handlers
    =================================================================== */
 document.addEventListener("click", (e) => {
-  if (e.target.closest("#splashSkip")) {
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    dismissSplash();
-    return;
-  }
   const next = e.target.closest("#onboardNext");
   const skip = e.target.closest("#onboardSkip");
   if (next) {
@@ -2077,8 +2067,9 @@ init();
 (() => {
   const hasOnboarding = !localStorage.getItem("hh_onboarded");
   if (hasOnboarding) return; // onboardFinish() will handle it
-  const splash = document.getElementById("splash");
+  const splash = document.getElementById("orakel-splash");
   const splashVisible = splash && !splash.hidden;
-  const delay = splashVisible ? 8500 : 800;
+  // Orakel takes ~6.5s for descent; only delay if it's actually visible
+  const delay = splashVisible ? 7500 : 800;
   setTimeout(() => replayHeroReveal(startView), delay);
 })();

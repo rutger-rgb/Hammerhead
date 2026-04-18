@@ -2,13 +2,14 @@
  * Handles: offline caching (cache-first for static assets, network-first
  * for API/CDN), and notification click routing. */
 
-const CACHE_NAME = "hh-cache-v2";
+const CACHE_NAME = "hh-cache-v4";
 const STATIC_ASSETS = [
   "./",
   "./index.html",
-  "./app.html",
   "./styles.css",
+  "./orakel-splash.css",
   "./app.js",
+  "./orakel-splash.js",
   "./config.js",
   "./icon.svg",
   "./manifest.webmanifest",
@@ -82,7 +83,7 @@ self.addEventListener("notificationclick", (event) => {
         }
       }
       if (self.clients.openWindow) {
-        return self.clients.openWindow("./app.html#articles");
+        return self.clients.openWindow("./#articles");
       }
     })()
   );
