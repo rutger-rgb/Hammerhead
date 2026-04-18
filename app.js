@@ -595,12 +595,9 @@ function showSplash() {
   const splash = document.getElementById("orakel-splash");
   if (!splash) return;
 
-  // Already seen this session OR installed PWA (standalone) → skip opening
-  const standalone =
-    (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
-    window.navigator.standalone === true;
+  // Show once per session (PWA standalone included). ?replay forces it.
   const replay = new URLSearchParams(location.search).has("replay");
-  if (!replay && (sessionStorage.getItem("hh_orakel_seen") || standalone)) {
+  if (!replay && sessionStorage.getItem("hh_orakel_seen")) {
     splash.remove();
     return;
   }
