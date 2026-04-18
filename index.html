@@ -390,13 +390,6 @@
         clearTimeout(safetyTimer);
         if (window.dismissOrakelSplash) window.dismissOrakelSplash();
       };
-      window.addEventListener("error", function(ev){
-        if (ev.filename && ev.filename.indexOf("orakel") !== -1) {
-          console.error("[orakel] Runtime error:", ev.message, "@", ev.filename, ev.lineno);
-          clearTimeout(safetyTimer);
-          if (window.dismissOrakelSplash) window.dismissOrakelSplash();
-        }
-      });
       document.body.appendChild(s);
     })();
   </script>
