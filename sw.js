@@ -2,7 +2,7 @@
  * Handles: offline caching (cache-first for static assets, network-first
  * for API/CDN), and notification click routing. */
 
-const CACHE_NAME = "hh-cache-v7";
+const CACHE_NAME = "hh-cache-v8";
 const STATIC_ASSETS = [
   "./",
   "./index.html",
