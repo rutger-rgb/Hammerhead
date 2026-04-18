@@ -1140,18 +1140,36 @@ function persist(edits){ try{ window.parent.postMessage({type:'__edit_mode_set_k
 try{ window.parent.postMessage({type:'__edit_mode_available'},'*'); }catch(e){}
 
 // ─────────── init ───────────
-applyPalette(state.palette);
-applyQuality(state.quality);
-// initial placement
-resetObjects();
-attachHammerToRightHand();
+function orakelInit(){
+  try {
+    console.log('[orakel] applying palette');
+    applyPalette(state.palette);
+    console.log('[orakel] applying quality');
+    applyQuality(state.quality);
+    console.log('[orakel] resetObjects');
+    resetObjects();
+    console.log('[orakel] attachHammerToRightHand');
+    attachHammerToRightHand();
+    console.log('[orakel] init complete, hiding loader on next frame');
 
-// hide loader on first frame
-requestAnimationFrame(()=>{
-  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        try { window.__orakelClearSafetyTimer && window.__orakelClearSafetyTimer(); } catch(e){}
+        const loadingEl = document.getElementById('loading');
+        if (loadingEl) loadingEl.classList.add('hidden');
+        console.log('[orakel] loader hidden, starting animation');
+        play(state.variant);
+        tick();
+      });
+    });
+  } catch (err) {
+    console.error('[orakel] init failed:', err);
+    const loadingEl = document.getElementById('loading');
+    if (loadingEl) {
+      loadingEl.innerHTML = '<div style="color:#ff2d55;font-family:monospace;font-size:11px;letter-spacing:.1em;text-align:center;max-width:80%;">INIT FAILED<br>' + String(err && err.message || err) + '</div>';
+    }
     try { window.__orakelClearSafetyTimer && window.__orakelClearSafetyTimer(); } catch(e){}
-    document.getElementById('loading').classList.add('hidden');
-    play(state.variant);
-    tick();
-  });
-});
+    setTimeout(()=>{ if (window.dismissOrakelSplash) window.dismissOrakelSplash(); }, 2500);
+  }
+}
+orakelInit();
