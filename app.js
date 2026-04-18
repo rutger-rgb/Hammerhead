@@ -601,14 +601,14 @@ function showSplash() {
     (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
     window.navigator.standalone === true;
   const replay = new URLSearchParams(location.search).has("replay");
-  if (!replay && (sessionStorage.getItem("hh_splash_seen") || standalone)) {
+  if (!replay && (sessionStorage.getItem("hh_orakel_seen") || standalone)) {
     splash.remove();
     return;
   }
 
   splash.hidden = false;
   document.body.classList.add("orakel-active");
-  sessionStorage.setItem("hh_splash_seen", "1");
+  sessionStorage.setItem("hh_orakel_seen", "1");
 }
 showSplash();
 
