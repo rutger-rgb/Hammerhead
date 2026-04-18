@@ -1,10 +1,10 @@
-import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
-import { EffectComposer } from 'https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js';
-import { RenderPass }     from 'https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/RenderPass.js';
-import { UnrealBloomPass }from 'https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js';
-import { ShaderPass }     from 'https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/ShaderPass.js';
-import { FXAAShader }     from 'https://unpkg.com/three@0.160.0/examples/jsm/shaders/FXAAShader.js';
-import { RGBShiftShader } from 'https://unpkg.com/three@0.160.0/examples/jsm/shaders/RGBShiftShader.js';
+import * as THREE from 'https://esm.sh/three@0.160.0';
+import { EffectComposer } from 'https://esm.sh/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass }     from 'https://esm.sh/three@0.160.0/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass }from 'https://esm.sh/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { ShaderPass }     from 'https://esm.sh/three@0.160.0/examples/jsm/postprocessing/ShaderPass.js';
+import { FXAAShader }     from 'https://esm.sh/three@0.160.0/examples/jsm/shaders/FXAAShader.js';
+import { RGBShiftShader } from 'https://esm.sh/three@0.160.0/examples/jsm/shaders/RGBShiftShader.js';
 
 // ─────────── palette ───────────
 const PALETTES = {
