@@ -1,10 +1,12 @@
-import * as THREE from 'https://esm.sh/three@0.160.0';
-import { EffectComposer } from 'https://esm.sh/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js';
-import { RenderPass }     from 'https://esm.sh/three@0.160.0/examples/jsm/postprocessing/RenderPass.js';
-import { UnrealBloomPass }from 'https://esm.sh/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js';
-import { ShaderPass }     from 'https://esm.sh/three@0.160.0/examples/jsm/postprocessing/ShaderPass.js';
-import { FXAAShader }     from 'https://esm.sh/three@0.160.0/examples/jsm/shaders/FXAAShader.js';
-import { RGBShiftShader } from 'https://esm.sh/three@0.160.0/examples/jsm/shaders/RGBShiftShader.js';
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/+esm';
+import { EffectComposer } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js/+esm';
+import { RenderPass }     from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/RenderPass.js/+esm';
+import { UnrealBloomPass }from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js/+esm';
+import { ShaderPass }     from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/ShaderPass.js/+esm';
+import { FXAAShader }     from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/shaders/FXAAShader.js/+esm';
+import { RGBShiftShader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/shaders/RGBShiftShader.js/+esm';
+
+console.log('[orakel] Three.js modules loaded:', { THREE: !!THREE, EffectComposer: !!EffectComposer });
 
 // ─────────── palette ───────────
 const PALETTES = {
@@ -1097,6 +1099,7 @@ attachHammerToRightHand();
 // hide loader on first frame
 requestAnimationFrame(()=>{
   requestAnimationFrame(()=>{
+    try { window.__orakelClearSafetyTimer && window.__orakelClearSafetyTimer(); } catch(e){}
     document.getElementById('loading').classList.add('hidden');
     play(state.variant);
     tick();

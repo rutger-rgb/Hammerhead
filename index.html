@@ -375,9 +375,30 @@
     (function() {
       const splash = document.getElementById("orakel-splash");
       if (!splash || splash.hidden) return;
-      const s = document.createElement("script");
+
+      // Safety net: if the 3D scene hasn't finished initializing within 12s,
+      // auto-dismiss the splash so the user isn't stuck on the loader.
+      var safetyTimer = setTimeout(function(){
+        console.warn("[orakel] Setup timed out — dismissing splash.");
+        if (window.dismissOrakelSplash) window.dismissOrakelSplash();
+      }, 12000);
+      window.__orakelClearSafetyTimer = function(){ clearTimeout(safetyTimer); };
+
+      var s = document.createElement("script");
       s.type = "module";
       s.src = "orakel-splash.js";
+      s.onerror = function(e){
+        console.error("[orakel] Failed to load module:", e);
+        clearTimeout(safetyTimer);
+        if (window.dismissOrakelSplash) window.dismissOrakelSplash();
+      };
+      window.addEventListener("error", function(ev){
+        if (ev.filename && ev.filename.indexOf("orakel") !== -1) {
+          console.error("[orakel] Runtime error:", ev.message, "@", ev.filename, ev.lineno);
+          clearTimeout(safetyTimer);
+          if (window.dismissOrakelSplash) window.dismissOrakelSplash();
+        }
+      });
       document.body.appendChild(s);
     })();
   </script>
