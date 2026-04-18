@@ -1105,7 +1105,6 @@ document.getElementById('titleIn').addEventListener('input', e=>{ state.title = 
 document.getElementById('taglineIn').addEventListener('input', e=>{ state.tagline = e.target.value; document.getElementById('tagline').textContent = `"${state.tagline}"`; persist({tagline: state.tagline}); });
 document.getElementById('kickerIn').addEventListener('input', e=>{ state.kicker = e.target.value; document.getElementById('kicker').textContent = state.kicker; persist({kicker: state.kicker}); });
 
-document.getElementById('replayBtn').addEventListener('click', ()=> play(currentVariant));
 document.getElementById('openApp').addEventListener('click', ()=> { window.dismissOrakelSplash && window.dismissOrakelSplash(); });
 document.getElementById('ctaPrimary').addEventListener('click', ()=>{ setTimeout(()=> { window.dismissOrakelSplash && window.dismissOrakelSplash(); }, 180); });
 
